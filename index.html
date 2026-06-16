@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#060906">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>FORGE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060906; --pan:#0b110b; --pan2:#0e160e; --ln:#1d301f;
+  --gn:#41ff7d; --gd:#2aa455; --amb:#ffb000; --rd:#ff5547;
+  --tx:#cdeed6; --mu:#6d8f77; --cy:#54d1ff;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:14px;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom));}
+header{padding:calc(10px + env(safe-area-inset-top)) 16px 8px;border-bottom:1px solid var(--ln);
+  position:sticky;top:0;background:rgba(6,9,6,.93);backdrop-filter:blur(5px);z-index:5;
+  display:flex;align-items:baseline;gap:10px}
+h1{margin:0;font-size:20px;letter-spacing:.35em;color:var(--gn);
+  text-shadow:0 0 14px rgba(65,255,125,.35);font-weight:600}
+.sub{font-size:9px;color:var(--mu);letter-spacing:.18em}
+#timerStrip{margin-left:auto;color:var(--amb);font-size:13px;letter-spacing:.08em;cursor:pointer;white-space:nowrap}
+main{padding:12px;max-width:760px;margin:0 auto}
+.panel{background:var(--pan);border:1px solid var(--ln);border-radius:6px;padding:12px;margin-bottom:12px}
+.ptitle{font-size:10px;letter-spacing:.22em;color:var(--mu);margin-bottom:8px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:var(--pan2);border:1px solid var(--ln);border-radius:6px;padding:10px;min-width:0}
+.kpi .v{font-size:19px;color:var(--gn);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .l{font-size:9px;letter-spacing:.2em;color:var(--mu);margin-bottom:4px}
+.kpi .s{font-size:10px;color:var(--mu);margin-top:4px}
+input,select{background:#091009;border:1px solid var(--ln);color:var(--tx);border-radius:4px;
+  padding:10px;font:inherit;width:100%;font-size:16px}
+input:focus,select:focus{outline:none;border-color:var(--gd);box-shadow:0 0 0 1px var(--gd)}
+label.fl{display:block;font-size:9px;letter-spacing:.18em;color:var(--mu);margin:0 0 4px 1px}
+.row{display:flex;gap:8px;margin-bottom:8px}
+.row>*{flex:1;min-width:0}
+.btn{background:#0d1a10;border:1px solid var(--gd);color:var(--gn);border-radius:4px;
+  padding:11px 12px;font:inherit;letter-spacing:.12em;font-size:12px;cursor:pointer}
+.btn:active{background:#143420}
+.btn.amb{border-color:#8a6200;color:var(--amb);background:#1a1406}
+.btn.rd{border-color:#7a2a24;color:var(--rd);background:#190b0a}
+.btn.sm{padding:6px 9px;font-size:10px;letter-spacing:.1em}
+.btn.full{width:100%}
+.list .it{display:flex;justify-content:space-between;gap:8px;padding:9px 2px;
+  border-bottom:1px dashed rgba(29,48,31,.55);font-size:12.5px;align-items:center}
+.list .it:last-child{border-bottom:0}
+.mut{color:var(--mu)} .amber{color:var(--amb)} .red{color:var(--rd)} .gn{color:var(--gn)}
+.small{font-size:11px}
+nav#tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(8,13,8,.96);
+  border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom);z-index:9}
+#tabs button{flex:1;background:none;border:none;color:var(--mu);font:inherit;font-size:9.5px;
+  letter-spacing:.08em;padding:15px 0 13px;border-top:2px solid transparent;cursor:pointer}
+#tabs button.on{color:var(--gn);border-top-color:var(--gn);text-shadow:0 0 10px rgba(65,255,125,.4)}
+svg{display:block} svg text{font-family:inherit}
+.chartbox{position:relative;margin:4px 0}
+.readout{font-size:10.5px;color:var(--amb);min-height:15px;letter-spacing:.06em;margin-top:3px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(78px + env(safe-area-inset-bottom));background:#0d1a10;border:1px solid var(--gd);
+  color:var(--gn);padding:9px 14px;border-radius:4px;font-size:12px;opacity:0;transition:.25s;
+  pointer-events:none;z-index:20;letter-spacing:.05em;max-width:92vw;text-align:center}
+#toast.show{opacity:1}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl td,.tbl th{padding:6px 4px;border-bottom:1px solid rgba(29,48,31,.4);text-align:right}
+.tbl th{color:var(--mu);font-weight:400;font-size:9.5px;letter-spacing:.16em}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tag{font-size:9px;letter-spacing:.14em;border:1px solid;padding:2px 6px;border-radius:3px;white-space:nowrap}
+hr{border:0;border-top:1px solid var(--ln);margin:12px 0}
+.empty{color:var(--mu);font-size:11.5px;letter-spacing:.06em;padding:10px 0;line-height:1.7}
+.bk{background:none;border:none;color:var(--mu);font:inherit;font-size:11px;
+  letter-spacing:.14em;padding:0 0 10px;cursor:pointer}
+.plateline{font-size:11px;color:var(--amb);letter-spacing:.04em;min-height:15px;margin:-2px 1px 8px}
+.cy{color:var(--cy)}
+.seg{display:flex;gap:6px;margin-bottom:12px}
+.seg button{flex:1;background:var(--pan);border:1px solid var(--ln);color:var(--mu);font:inherit;
+  font-size:10px;letter-spacing:.14em;padding:10px 0;border-radius:4px;cursor:pointer}
+.seg button.on{color:var(--gn);border-color:var(--gd);text-shadow:0 0 8px rgba(65,255,125,.35)}
+.wstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0 10px}
+.wcell{background:var(--pan2);border:1px solid var(--ln);border-radius:4px;padding:6px 1px;text-align:center;min-width:0}
+.wcell .d{font-size:8.5px;letter-spacing:.08em;color:var(--mu)}
+.wcell .l{font-size:9.5px;color:var(--tx);margin-top:3px;white-space:nowrap;overflow:hidden}
+.wcell .r{font-size:8px;color:var(--mu);margin-top:2px}
+.wcell.hot{border-color:var(--gd);box-shadow:0 0 7px rgba(65,255,125,.25)}
+.dnote{font-size:11px;color:var(--mu);font-style:italic;border-top:1px dashed rgba(29,48,31,.55);
+  margin-top:9px;padding-top:7px;line-height:1.55}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--mu);margin-top:6px;letter-spacing:.08em}
+.legend i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle}
+.rx{white-space:pre-wrap;background:var(--pan2);border:1px solid var(--ln);border-radius:4px;
+  padding:10px;font-size:12px;line-height:1.65;margin:9px 0}
+.done{background:#0d1a10;border:1px solid var(--gd);color:var(--gn);padding:8px 10px;
+  border-radius:4px;font-size:11px;letter-spacing:.06em;margin:8px 0}
+.tbl td input{min-width:0;font-size:15px}
+input[type=range]{accent-color:var(--gn);padding:0;height:30px;border:none;background:transparent}
+input[type=date]{color-scheme:dark}
+@media(min-width:560px){.kpis{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>FORGE</h1>
+  <div class="sub">TRAINING&nbsp;CONSOLE</div>
+  <div id="timerStrip" data-act="timer-kill" hidden></div>
+</header>
+<main id="view"></main>
+<nav id="tabs">
+  <button data-tab="today" class="on">TODAY</button>
+  <button data-tab="dash">DASH</button>
+  <button data-tab="plan">PLAN</button>
+  <button data-tab="analyze">ANALYZE</button>
+  <button data-tab="body">BODY</button>
+  <button data-tab="data">DATA</button>
+</nav>
+<div id="toast"></div>
+<script>
+/* ============================== UTIL ============================== */
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dayNum(ds){return Math.floor(Date.parse(ds+'T12:00:00Z')/86400000);}
+function fromDay(n){const d=new Date(n*86400000);return d.toISOString().slice(0,10);}
+function mdLabel(ds){return ds.slice(5,7)+'/'+ds.slice(8,10);}
+function fmtN(x,dp){return (x==null||!isFinite(x))?'\u2014':Number(x).toFixed(dp==null?1:dp);}
+function secHMS(s){if(s==null||!isFinite(s))return '\u2014';s=Math.round(s);
+  const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;
+  return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0');}
+function secPace(spm){if(spm==null||!isFinite(spm))return '\u2014';return secHMS(spm)+'/mi';}
+function parseDur(s){s=String(s||'').trim();if(!s)return null;
+  const p=s.split(':').map(t=>parseFloat(t));
+  if(p.some(t=>isNaN(t)))return null;
+  if(p.length===1)return p[0]*60;
+  let sec=0;for(const t of p)sec=sec*60+t;
+  return sec;}
+function parseDateAny(s){s=String(s||'').trim();
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return s.slice(0,10);
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if(m){const y=m[3].length===2?'20'+m[3]:m[3];
+    return y+'-'+String(m[1]).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');}
+  const d=new Date(s);if(!isNaN(d))return d.toISOString().slice(0,10);
+  return null;}
+function roundTo(x,q){return Math.round(x/q)*q;}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toast._h);toast._h=setTimeout(()=>t.classList.remove('show'),2600);}
+
+/* ============================== STATE ============================== */
+const DEF={
+  version:1,
+  settings:{barWeight:45,roundLb:5,defaultRest:120,
+    plates:{'45':6,'35':2,'25':2,'10':4,'5':4,'2.5':2},
+    runGoalDist:1.5,runGoalSec:570,goal5k:'21:00',bwGoal:null,syncUrl:'',
+    engine:{start:'2026-03-30',time:'06:00',useEst:true,ohpRatio:0.63,mile15:'10:00',mapped:false,
+      lifts:{bench:{test:275,goal:315,map:null},squat:{test:345,goal:375,map:null},
+             deadlift:{test:485,goal:500,map:null},ohp:{map:null}}}},
+  exMeta:{},            /* name -> {target, rest} */
+  templates:[],         /* {id,name,items:[{ex,sets,reps,pct}]} */
+  runTemplates:[],      /* {id,reps,dist,restSec,offset} */
+  plan:null,            /* {tid,name,items:[{ex,target,reps,sets}]} */
+  liftSets:[],          /* {id,date,ts,exercise,weight,reps,rpe?,src} */
+  runs:[],              /* {id,date,distMi,timeSec,title?,src} */
+  weights:[],           /* {date,lb} */
+  notes:{},             /* date -> session note */
+  touch:{}              /* date -> updatedAt ms, drives sync merge */
+};
+const KEY='forge_v1';
+function ensure(s){const fill=(t,d)=>{for(const k in d){
+    if(t[k]===undefined)t[k]=JSON.parse(JSON.stringify(d[k]));
+    else if(t[k]&&d[k]&&typeof t[k]==='object'&&typeof d[k]==='object'
+      &&!Array.isArray(t[k])&&!Array.isArray(d[k]))fill(t[k],d[k]);}};
+  fill(s,DEF);return s;}
+function load(){try{const raw=localStorage.getItem(KEY);
+    if(raw){const s=JSON.parse(raw);if(s&&s.version===1)return ensure(s);}
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEF));}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}
+  catch(e){toast('STORAGE WRITE FAILED \u2014 EXPORT A BACKUP');}}
+function touch(d){state.touch[d]=Date.now();}
+let state=load();
+let tab='today', liftDetail=null;
+let planSeg='week', planWeek=null, anaSeg='over', dayDate=null;
+
+/* ============================== MATH ============================== */
+function epley(w,r){return r===1?w:w*(1+r/30);}
+
+function ols(pts){const n=pts.length;if(n<2)return null;
+  let sx=0,sy=0,sxx=0,sxy=0;
+  for(const[x,y]of pts){sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;}
+  const xb=sx/n,yb=sy/n,Sxx=sxx-n*xb*xb;
+  if(Math.abs(Sxx)<1e-9)return null;
+  const b=(sxy-n*xb*yb)/Sxx,a=yb-b*xb;
+  let sse=0;for(const[x,y]of pts){const e=y-(a+b*x);sse+=e*e;}
+  const s2=n>2?sse/(n-2):0;
+  return{a,b,n,xb,Sxx,s:Math.sqrt(s2),
+    pred:x=>a+b*x,
+    ci:x=>n>2?1.96*Math.sqrt(s2*(1/n+Math.pow(x-xb,2)/Sxx)):0};}
+
+function emaSeries(pts,n){const a=2/(n+1);let e=null;const out=[];
+  for(const[x,y]of pts){e=e==null?y:a*y+(1-a)*e;out.push([x,e]);}
+  return out;}
+
+/* Per-exercise e1RM: best per day; reps>10 tracked separately (flagged, excluded from fit) */
+function e1rmSeries(ex){
+  const inc={},fl={};
+  for(const s of state.liftSets){if(s.exercise!==ex)continue;
+    const v=epley(s.weight,s.reps),d=s.date;
+    if(s.reps>10){if(!fl[d]||v>fl[d])fl[d]=v;}
+    else{if(!inc[d]||v>inc[d])inc[d]=v;}}
+  const f=o=>Object.keys(o).sort().map(d=>[dayNum(d),o[d]]);
+  return{inc:f(inc),flagged:f(fl)};}
+
+function currentE1RM(ex){const{inc}=e1rmSeries(ex);if(!inc.length)return null;
+  const cut=dayNum(todayStr())-45;
+  const recent=inc.filter(p=>p[0]>=cut);
+  const pool=recent.length?recent:inc.slice(-1);
+  return Math.max.apply(null,pool.map(p=>p[1]));}
+
+function exerciseNames(){const s=new Set();
+  for(const x of state.liftSets)s.add(x.exercise);
+  for(const t of state.templates)for(const i of t.items)s.add(i.ex);
+  return Array.from(s).sort();}
+
+function repPRs(ex){const out={};
+  for(const s of state.liftSets){if(s.exercise!==ex||s.reps<1||s.reps>15)continue;
+    if(!out[s.reps]||s.weight>out[s.reps].weight)out[s.reps]={weight:s.weight,date:s.date};}
+  return out;}
+
+function recentPRs(days){
+  const sorted=state.liftSets.slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.ts||0)-(b.ts||0));
+  const best={},hits=[];const cut=dayNum(todayStr())-days;
+  for(const s of sorted){const k=s.exercise+'|'+s.reps;
+    if(!(k in best)||s.weight>best[k]){
+      if((k in best)&&dayNum(s.date)>=cut)
+        hits.push({date:s.date,ex:s.exercise,reps:s.reps,weight:s.weight,prev:best[k]});
+      best[k]=s.weight;}}
+  return hits.reverse().slice(0,8);}
+
+function stalled(ex){const{inc}=e1rmSeries(ex);if(inc.length<6)return false;
+  const allMax=Math.max.apply(null,inc.map(p=>p[1]));
+  const last4=Math.max.apply(null,inc.slice(-4).map(p=>p[1]));
+  const f=ols(inc.slice(-6));
+  return f&&f.b<=0&&last4<allMax*0.995;}
+
+function weeklyTonnage(){const wk={};
+  for(const s of state.liftSets){
+    const w=Math.floor((dayNum(s.date)+3)/7);  /* epoch was a Thursday; +3 -> Mon-start weeks */
+    wk[w]=(wk[w]||0)+s.weight*s.reps;}
+  return wk;}
+
+/* Riegel: fit personal fatigue exponent k on log(T) vs log(D) using best effort per distance bucket */
+function riegelK(runs){
+  const today=dayNum(todayStr());
+  const ok=runs.filter(r=>r.distMi>=0.75&&r.distMi<=13.2&&r.timeSec>0);
+  const recent=ok.filter(r=>today-dayNum(r.date)<=120);
+  const pool=recent.length>=3?recent:ok;
+  const buckets={};
+  for(const r of pool){const d=Math.round(r.distMi*4)/4;
+    const pace=r.timeSec/r.distMi;
+    if(!buckets[d]||pace<buckets[d].timeSec/buckets[d].distMi)buckets[d]=r;}
+  const pts=Object.values(buckets).map(r=>[Math.log(r.distMi),Math.log(r.timeSec)]);
+  const dists=new Set(Object.keys(buckets));
+  if(pts.length<2||dists.size<2)return{k:1.06,fit:false,points:pts.length};
+  const f=ols(pts);
+  if(!f||!isFinite(f.b))return{k:1.06,fit:false,points:pts.length};
+  return{k:Math.min(1.30,Math.max(1.00,f.b)),fit:true,points:pts.length};}
+
+function eq15Series(k){const g=state.settings;
+  return state.runs
+    .filter(r=>r.distMi>=0.75&&r.distMi<=13.2&&r.timeSec>0)
+    .map(r=>[dayNum(r.date),r.timeSec*Math.pow(g.runGoalDist/r.distMi,k)])
+    .sort((a,b)=>a[0]-b[0]);}
+
+function predictRace(dist,k,t15){return t15*Math.pow(dist/state.settings.runGoalDist,k);}
+
+/* ACWR: acute = trailing 7-day mileage; chronic = trailing 28-day mileage / 4 */
+function acwrSeries(){
+  if(!state.runs.length)return{series:[],cur:null,acute:0,chronic:0};
+  const daily={};let minD=Infinity;
+  for(const r of state.runs){const d=dayNum(r.date);
+    daily[d]=(daily[d]||0)+r.distMi;if(d<minD)minD=d;}
+  const today=dayNum(todayStr());
+  const sumBack=(d,n)=>{let s=0;for(let i=0;i<n;i++)s+=daily[d-i]||0;return s;};
+  const series=[];const start=Math.max(minD+27,today-112);
+  for(let d=start;d<=today;d++){
+    const a=sumBack(d,7),c=sumBack(d,28)/4;
+    if(c>=2)series.push([d,a/c]);}
+  const acute=sumBack(today,7),chronic=sumBack(today,28)/4;
+  return{series,cur:chronic>=2?acute/chronic:null,acute,chronic};}
+
+function acwrStatus(r){if(r==null)return['\u2014','mut'];
+  if(r<0.8)return['LOW','mut'];if(r<=1.3)return['OK','gn'];
+  if(r<=1.5)return['HIGH','amber'];return['SPIKE','red'];}
+
+/* Body weight trend */
+function bwSeries(){const pts=state.weights.slice()
+    .sort((a,b)=>a.date<b.date?-1:1).map(w=>[dayNum(w.date),w.lb]);
+  const ema=emaSeries(pts,7);
+  let rate=null;
+  if(ema.length>=4){const cut=dayNum(todayStr())-21;
+    const tail=ema.filter(p=>p[0]>=cut);
+    const f=ols(tail.length>=4?tail:ema.slice(-6));
+    if(f)rate=f.b*7;}
+  return{pts,ema,rate};}
+
+function plates(target,bar,inv){
+  let side=(target-bar)/2;
+  if(side<-0.01)return{ok:false,below:null,out:[],side};
+  const sizes=Object.keys(inv).map(Number).filter(x=>x>0).sort((a,b)=>b-a);
+  const out=[];let rem=side;
+  for(const s of sizes){
+    const c=Math.min(Math.floor(rem/s+1e-9),inv[s]||0);
+    if(c>0){out.push([s,c]);rem=Math.round((rem-s*c)*1000)/1000;}}
+  return{ok:rem<=0.01,out,rem,side};}
+
+/* ============================== VDOT (DANIELS-GILBERT) ============================== */
+const MILE_M=1609.34;
+function vo2FromVel(v){return 0.182258*v+0.000104*v*v-4.6;}
+function pctVmax(t){return 0.8+0.1894393*Math.exp(-0.012778*t)+0.2989558*Math.exp(-0.1932605*t);}
+function vdotFromRace(dM,tMin){return vo2FromVel(dM/tMin)/pctVmax(tMin);}
+function velFromVO2(o){const a=0.000104,b=0.182258,c=-4.6-o;
+  return(-b+Math.sqrt(b*b-4*a*c))/(2*a);}
+function paceSecMi(vdot,frac){return MILE_M/velFromVO2(vdot*frac)*60;}
+function raceSecAtVdot(dM,vdot){let lo=2,hi=120;
+  for(let i=0;i<80;i++){const m=(lo+hi)/2;
+    (vo2FromVel(dM/m)/pctVmax(m)>vdot)?lo=m:hi=m;}
+  return (lo+hi)/2*60;}
+const FRAC={Eslow:0.66,Efast:0.74,M:0.84,T:0.88,I:0.975};
+function zonePaces(v){return{
+  E:secHMS(paceSecMi(v,FRAC.Efast))+'\u2013'+secHMS(paceSecMi(v,FRAC.Eslow)),
+  M:secHMS(paceSecMi(v,FRAC.M)),T:secHMS(paceSecMi(v,FRAC.T)),
+  I:secHMS(paceSecMi(v,FRAC.I)),R:secHMS(raceSecAtVdot(MILE_M,v))};}
+
+/* ============================== PROGRAM ENGINE (ported from Concurrent Training Engine) ============================== */
+function phaseInfo(week){
+  if(week===36)return{focus:'RACE',wib:1,cycle:3};
+  const cycle=Math.ceil(week/12);const w=(week-1)%12+1;
+  if(w<=3)return{focus:'HYP',wib:w,cycle};
+  if(w===4)return{focus:'DELOAD',wib:1,cycle};
+  if(w<=7)return{focus:'STR',wib:w-4,cycle};
+  if(w===8)return{focus:'DELOAD',wib:1,cycle};
+  if(w<=11)return{focus:'INT',wib:w-8,cycle};
+  return{focus:cycle===3?'TAPER':'RETEST',wib:1,cycle};}
+const FOCUS={
+  HYP:{label:'HYPERTROPHY',short:'HYP',reps:8,color:'var(--gn)',pct:[0.76,0.76,0.80]},
+  STR:{label:'STRENGTH',short:'STR',reps:4,color:'var(--cy)',pct:[0.85,0.85,0.89]},
+  INT:{label:'INTENSIFICATION',short:'INT',reps:2,color:'var(--amb)',pct:[0.90,0.92,0.94]},
+  DELOAD:{label:'DELOAD',short:'DE',reps:5,color:'var(--mu)',pct:[0.65,0.65,0.65]},
+  RETEST:{label:'DELOAD \u00b7 RETEST',short:'TEST',reps:5,color:'var(--amb)',pct:[0.60,0.60,0.60]},
+  TAPER:{label:'TAPER',short:'TPR',reps:3,color:'var(--mu)',pct:[0.70,0.70,0.70]},
+  RACE:{label:'RACE WEEK',short:'RACE',reps:0,color:'var(--rd)',pct:[0.55,0.55,0.55]}};
+const RUN_QUALITY={
+  HYP:{i:'5 \u00d7 800 m @ I',t:'2 \u00d7 12 min @ T'},
+  STR:{i:'6 \u00d7 800 m @ I',t:'2 \u00d7 15 min @ T'},
+  INT:{i:'5 \u00d7 1000 m @ I',t:'22 min cont. @ T'},
+  DELOAD:{i:'4 \u00d7 600 m @ I (cruise)',t:'15 min @ T'},
+  RETEST:{i:'Bench retest day \u2014 easy 20 min',t:'Easy 20 min'},
+  TAPER:{i:'4 \u00d7 400 m @ R (sharpen)',t:'12 min @ T'},
+  RACE:{i:'1.5-mile time trial',t:'5K time trial'}};
+const ENG_DAYS=[
+  {k:'mon',name:'Mon',lift:'Bench',second:'Intervals',order:'run',
+   note:'Run first \u2014 VO2 intervals are the week\u2019s key aerobic stimulus, and bench spares the legs so the quality isn\u2019t blunted.'},
+  {k:'tue',name:'Tue',lift:'Deadlift',second:'Easy run',order:'lift',
+   note:'Lift first \u2014 heavy pulling is the priority; the easy run after banks aerobic volume without taxing the pull.'},
+  {k:'wed',name:'Wed',lift:'Squat',second:'Easy run',order:'lift',
+   note:'Lift first \u2014 squat priority; keep the run genuinely easy to protect tomorrow.'},
+  {k:'thu',name:'Thu',lift:null,second:'Easy + mobility',order:'run',
+   note:'Aerobic + mobility only \u2014 the recovery valve. 60-min cap, no quality.'},
+  {k:'fri',name:'Fri',lift:'OHP',second:'Tempo run',order:'lift',
+   note:'Lift first \u2014 OHP/row; tempo after on fresh-enough legs, leaving Saturday\u2019s long run unblunted.'},
+  {k:'sat',name:'Sat',lift:null,second:'Long run',order:'run',
+   note:'Long run solo \u2014 the biggest aerobic block; no lifting so it\u2019s fully absorbed.'},
+  {k:'sun',name:'Sun',lift:null,second:'Full rest',order:'rest',
+   note:'Full rest \u2014 the adaptation window for everything above.'}];
+const ACCESSORY={
+  Bench:'incline DB press \u00b7 triceps \u2014 2\u20133 sets',
+  Deadlift:'pull-ups / rows \u00b7 face pulls \u2014 2\u20133 sets',
+  Squat:'single-leg RDL \u00b7 leg curl \u00b7 calves \u2014 2\u20133 sets',
+  OHP:'barbell row \u00b7 lateral raise \u00b7 farmer carry \u2014 2\u20133 sets'};
+function engineCfg(){return state.settings.engine;}
+function engineNow(){const start=dayNum(engineCfg().start);
+  const d=dayNum(todayStr())-start;
+  return{start,week:Math.min(36,Math.max(1,Math.floor(d/7)+1)),dow:((d%7)+7)%7,d};}
+function weekDates(wk){const s=engineNow().start+(wk-1)*7;
+  return mdLabel(fromDay(s))+'\u2013'+mdLabel(fromDay(s+6));}
+function guessMap(){const e=engineCfg();const names=exerciseNames();
+  if(e.mapped||!names.length)return;
+  const pick=(re,bad)=>{const c=names.filter(n=>re.test(n)&&!(bad&&bad.test(n)));
+    c.sort((a,b)=>a.length-b.length);return c[0]||null;};
+  e.lifts.bench.map=e.lifts.bench.map||pick(/bench/i,/incline|decline|close/i);
+  e.lifts.squat.map=e.lifts.squat.map||pick(/squat/i,/front|split|goblet|hack|bulgarian|pause/i);
+  e.lifts.deadlift.map=e.lifts.deadlift.map||pick(/deadlift|\bdl\b/i,/romanian|rdl|stiff|single|deficit/i);
+  e.lifts.ohp.map=e.lifts.ohp.map||pick(/overhead|ohp|military|shoulder press|strict press/i,/db|dumbbell/i);
+  e.mapped=true;save();}
+function liftEngine(){guessMap();const e=engineCfg();const out={};
+  for(const k of['bench','squat','deadlift']){const L=e.lifts[k];
+    const live=L.map?currentE1RM(L.map):null;
+    const working=e.useEst?Math.max(L.test||0,live||0):(L.test||live||0);
+    out[k]={test:L.test||null,goal:L.goal||null,live:live?Math.round(live):null,
+      working:Math.round(working),map:L.map};}
+  const oLive=e.lifts.ohp.map?currentE1RM(e.lifts.ohp.map):null;
+  out.ohp={test:null,live:oLive?Math.round(oLive):null,
+    working:Math.round(oLive||out.bench.working*e.ohpRatio),
+    goal:Math.round((out.bench.goal||out.bench.working)*e.ohpRatio),map:e.lifts.ohp.map};
+  return out;}
+function runVdot(){const g=state.settings;const dM=g.runGoalDist*MILE_M;
+  const rg=riegelK(state.runs);const eq=eq15Series(rg.k);let t15=null;
+  if(eq.length){const today=dayNum(todayStr());
+    const tail=eq.filter(p=>p[0]>=today-120);
+    const f=tail.length>=3?ols(tail):(eq.length>=3?ols(eq.slice(-6)):null);
+    t15=f?f.pred(today):eq[eq.length-1][1];}
+  const manual=parseDur(engineCfg().mile15);
+  const live=t15!=null;
+  if(t15==null)t15=manual||600;
+  t15=Math.max(240,Math.min(2400,t15));
+  return{t15,live,k:rg.k,kFit:rg.fit,
+    vNow:vdotFromRace(dM,t15/60),vGoal:vdotFromRace(dM,g.runGoalSec/60)};}
+function projVal(now,goal,wk,cur){
+  if(goal==null||wk<=cur||goal<=now)return now;
+  return now+(goal-now)*(wk-cur)/Math.max(1,36-cur);}
+function buildProgram(){
+  const eng=liftEngine();const rv=runVdot();const now=engineNow();
+  const keys=['bench','deadlift','squat','ohp'];const weeks=[];
+  for(let wk=1;wk<=36;wk++){const ph=phaseInfo(wk);const f=FOCUS[ph.focus];const lifts={};
+    for(const k of keys){const pct=f.pct[ph.wib-1]!=null?f.pct[ph.wib-1]:f.pct[0];
+      const sets=['DELOAD','RETEST','TAPER','RACE'].includes(ph.focus)?2:(ph.wib===1?3:4);
+      const load=(f.reps===0||!eng[k].working)?null:
+        roundTo(projVal(eng[k].working,eng[k].goal,wk,now.week)*pct,state.settings.roundLb);
+      lifts[k]={reps:f.reps,sets,load,pct};}
+    weeks.push({wk,ph,f,lifts,vdot:projVal(rv.vNow,rv.vGoal,wk,now.week),mileage:0});}
+  for(let cy=1;cy<=3;cy++)for(const k of keys){
+    const sw=weeks.find(w=>w.ph.cycle===cy&&w.ph.focus==='STR'&&w.ph.wib===3);
+    if(!sw)continue;const top=sw.lifts[k].load;
+    weeks.filter(w=>w.ph.cycle===cy&&w.ph.focus==='INT').forEach(w=>{
+      if(w.lifts[k].load!=null&&top!=null&&w.lifts[k].load<=top)
+        w.lifts[k].load=top+5*w.ph.wib;});}
+  weeks.forEach(w=>{let b=20+(w.wk-1)*12/33;
+    if(['DELOAD','RETEST'].includes(w.ph.focus))b*=0.62;
+    if(w.ph.focus==='TAPER')b*=0.55;
+    if(w.ph.focus==='RACE')b*=0.45;
+    w.mileage=Math.round(b);});
+  return{weeks,eng,rv,now};}
+function runText(d,w){
+  if(d.second==='Intervals')return RUN_QUALITY[w.ph.focus].i;
+  if(d.second==='Tempo run')return RUN_QUALITY[w.ph.focus].t;
+  if(d.second==='Long run')return w.ph.focus==='RACE'?'race day':Math.max(5,Math.round(w.mileage*0.34))+' mi';
+  if(d.second==='Easy run')return Math.max(3,Math.round(w.mileage*0.16))+' mi';
+  if(d.second==='Easy + mobility')return '30\u201340 min \u00b7 cap 60';
+  return '';}
+function runPaceFor(d,w){const p=zonePaces(w.vdot);
+  if(d.second==='Intervals')return w.ph.focus==='TAPER'?p.R:p.I;
+  if(d.second==='Tempo run')return p.T;
+  if(['Easy run','Long run','Easy + mobility'].includes(d.second))return p.E;
+  return '';}
+function feas(d){return d<=20?['CONSERVATIVE','gn']:d<=35?['REALISTIC','cy']:['AGGRESSIVE','amber'];}
+
+/* ============================== TODAY HELPERS ============================== */
+function dayDateOf(wk,dow){return fromDay(engineNow().start+(wk-1)*7+dow);}
+function dayAt(dateStr){const start=engineNow().start;const d=dayNum(dateStr)-start;
+  const wk=Math.floor(d/7)+1,dow=((d%7)+7)%7;
+  if(wk<1||wk>36)return null;
+  return{wk,dow};}
+function dayTitle(d,w){
+  if(w.ph.focus==='RACE')return d.k==='sat'?'RACE DAY':'RACE-WEEK SHAKEOUT';
+  if(w.ph.focus==='RETEST')return d.lift?d.lift.toUpperCase()+' RETEST + EASY':'EASY + MOBILITY';
+  if(!d.lift)return d.second.toUpperCase();
+  const m={Bench:'INTERVALS \u2192 BENCH',Deadlift:'DEADLIFT \u2192 EASY RUN',
+    Squat:'SQUAT \u2192 EASY RUN',OHP:'OHP \u2192 TEMPO'}[d.lift];
+  return m+' ('+w.f.short+' '+(w.ph.wib||1)+'/3)';}
+const ACC_ROWS={
+  Bench:[['DB Incline',3,10],['Weighted Dips',3,8],['OH Tri Ext',3,12],['Face Pulls',3,15]],
+  Deadlift:[['Pull-ups',3,6],['BB Row',3,8],['Curls',3,12],['Ab Wheel',3,10]],
+  Squat:[['RDL',3,10],['Leg Curl',3,12],['Lunges',2,10],['Hanging Leg Raise',3,12]],
+  OHP:[['Barbell Row',3,8],['Lat Raise',3,15],['Rear Delt',3,15],['Pushdown',3,12]]};
+function dayExercises(d,w,eng){
+  if(!d.lift)return[];
+  const key=d.lift.toLowerCase(),Lp=w.lifts[key];
+  const mapped=(eng[key]&&eng[key].map)||d.lift;
+  const out=[];
+  if(w.ph.focus==='RETEST')
+    out.push({name:mapped,disp:d.lift,sets:1,reps:1,weight:'',
+      tgt:'RAMP TO HEAVY SINGLE'+(Lp&&Lp.load?' \u00b7 BACK-OFF 2\u00d73 @ '+Lp.load:'')});
+  else if(Lp&&Lp.load!=null)
+    out.push({name:mapped,disp:d.lift,sets:Lp.sets,reps:Lp.reps,weight:Lp.load,
+      tgt:Lp.sets+'\u00d7'+Lp.reps+' @ '+Lp.load+' ('+Math.round(Lp.pct*100)+'%)'});
+  else out.push({name:mapped,disp:d.lift,sets:1,reps:1,weight:'',
+      tgt:'RAMP TO HEAVY SINGLE'});
+  if(!['DELOAD','RETEST','TAPER','RACE'].includes(w.ph.focus))
+    for(const a of (ACC_ROWS[d.lift]||[]))
+      out.push({name:a[0],disp:a[0],sets:a[1],reps:a[2],weight:'',tgt:a[1]+'\u00d7'+a[2]});
+  return out;}
+
+/* ============================== SYNC (Apps Script web app, CTE-compatible wire) ============================== */
+function buildLogPayload(){const out={};const P=buildProgram();const byDate={};
+  for(const x of state.liftSets)(byDate[x.date]=byDate[x.date]||{s:[],r:[]}).s.push(x);
+  for(const x of state.runs)(byDate[x.date]=byDate[x.date]||{s:[],r:[]}).r.push(x);
+  for(const date in byDate){
+    const e={done:true,imported:false,updatedAt:state.touch[date]||Date.now()};
+    const di=dayAt(date);
+    if(di){e.weekIdx=di.wk;
+      const f=P.weeks[di.wk-1].ph.focus;e.phase=f==='RETEST'?'TEST':f;}
+    const g={};
+    for(const x of byDate[date].s)
+      (g[x.exercise]=g[x.exercise]||[]).push({w:x.weight,r:String(x.reps),rpe:x.rpe!=null?x.rpe:null});
+    const lifts=Object.keys(g).map(nm=>({name:nm,sets:g[nm]}));
+    if(lifts.length)e.lifts=lifts;
+    const r=byDate[date].r[0];
+    if(r){let zone='easy';
+      if(r.src==='retest')zone='tt';
+      else if(di){const sec=ENG_DAYS[di.dow].second;
+        zone=sec==='Intervals'?'interval':sec==='Tempo run'?'tempo':sec==='Long run'?'long':'easy';}
+      e.run={dist:r.distMi,time:secHMS(r.timeSec),pace:secHMS(r.timeSec/r.distMi),
+        hr:r.hr||null,rpe:r.rpe||null,note:r.title||'',plannedMiles:0,zone};}
+    if(state.notes[date])e.note=state.notes[date];
+    out[date]=e;}
+  return out;}
+function applyLogPayload(log){let n=0;
+  for(const date in log){const inc=log[date];
+    if(!inc||!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
+    if((inc.updatedAt||0)<=(state.touch[date]||0))continue;
+    state.liftSets=state.liftSets.filter(x=>x.date!==date);
+    state.runs=state.runs.filter(x=>x.date!==date);
+    if(inc.lifts)for(const lf of inc.lifts){if(!lf||!lf.name)continue;
+      const ss=(lf.sets&&lf.sets.length)?lf.sets:(lf.w!=null?[{w:lf.w,r:lf.r,rpe:lf.rpe}]:[]);
+      for(const st of ss){const reps=parseInt(st.r,10);
+        if(st.w==null||!isFinite(st.w)||!reps)continue;
+        state.liftSets.push({id:uid(),date,ts:inc.updatedAt||0,exercise:lf.name,
+          weight:st.w,reps,rpe:st.rpe!=null?st.rpe:undefined,src:'sync'});}}
+    if(inc.run&&inc.run.dist){const t=parseDur(inc.run.time);
+      if(t)state.runs.push({id:uid(),date,distMi:Math.round(inc.run.dist*100)/100,
+        timeSec:Math.round(t),hr:inc.run.hr||undefined,rpe:inc.run.rpe||undefined,
+        title:inc.run.note||'',
+        src:(inc.run.zone==='tt'||inc.run.zone==='race')?'retest':'sync'});}
+    if(inc.note)state.notes[date]=inc.note;
+    state.touch[date]=inc.updatedAt||Date.now();n++;}
+  if(n)save();return n;}
+function syncStat(m){const el=$('syStat');if(el)el.textContent=m;}
+function pushLog(){const url=state.settings.syncUrl;if(!url)return;
+  try{fetch(url,{method:'POST',mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'push',log:buildLogPayload()})});}catch(e){}}
+function pullLog(cb){const url=state.settings.syncUrl;
+  if(!url){if(cb)cb(false);return;}
+  const sc=document.createElement('script');let fin=false;
+  const clean=()=>{try{delete window.__forgeSync;}catch(e){window.__forgeSync=undefined;}
+    if(sc.parentNode)sc.parentNode.removeChild(sc);};
+  window.__forgeSync=resp=>{fin=true;
+    try{if(resp&&resp.log)applyLogPayload(resp.log);}catch(e){}
+    clean();if(cb)cb(true);};
+  sc.onerror=()=>{if(fin)return;clean();if(cb)cb(false);};
+  setTimeout(()=>{if(!fin){clean();if(cb)cb(false);}},8000);
+  sc.src=url+(url.indexOf('?')>=0?'&':'?')+'action=pull&callback=__forgeSync&t='+Date.now();
+  document.body.appendChild(sc);}
+const GAS_SRC='function doPost(e){\n'
++'  var body=JSON.parse(e.postData.contents||"{}");\n'
++'  if(body.action!=="push"||!body.log)return out_("ignored");\n'
++'  var store=load_(),log=body.log;\n'
++'  for(var d in log){var inc=log[d];if(!inc)continue;\n'
++'    var cur=store[d];\n'
++'    if(!cur||((inc.updatedAt||0)>=(cur.updatedAt||0)))store[d]=inc;}\n'
++'  save_(store);return out_("ok");\n'
++'}\n'
++'function doGet(e){\n'
++'  var cb=(e.parameter.callback||"cb").replace(/[^\\w$.]/g,"");\n'
++'  return ContentService.createTextOutput(cb+"("+JSON.stringify({log:load_()})+")")\n'
++'    .setMimeType(ContentService.MimeType.JAVASCRIPT);\n'
++'}\n'
++'function out_(m){return ContentService.createTextOutput(m);}\n'
++'function sh_(){var ss=SpreadsheetApp.getActiveSpreadsheet();\n'
++'  return ss.getSheetByName("FORGE_LOG")||ss.insertSheet("FORGE_LOG");}\n'
++'function load_(){\n'
++'  var v=sh_().getDataRange().getValues().map(function(r){return r[0]}).join("");\n'
++'  try{return JSON.parse(v)||{};}catch(err){return {};}\n'
++'}\n'
++'function save_(o){var j=JSON.stringify(o),s=sh_();s.clearContents();\n'
++'  var rows=[];for(var i=0;i*45000<j.length;i++)rows.push([j.substr(i*45000,45000)]);\n'
++'  s.getRange(1,1,rows.length,1).setValues(rows);\n'
++'}';
+
+/* ============================== CSV ============================== */
+function sniffDelim(line){let best=',',bn=0;
+  for(const d of [',',';','\t']){const n=line.split(d).length;if(n>bn){bn=n;best=d;}}
+  return best;}
+function parseCSV(text,delim){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+    else if(c==='"')q=true;
+    else if(c===delim){row.push(cur);cur='';}
+    else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+    else if(c==='\r'){}
+    else cur+=c;}
+  if(cur.length||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.length>1||(r[0]&&r[0].trim()!==''));}
+function colIdx(header,re){for(let i=0;i<header.length;i++)
+    if(re.test(header[i].trim()))return i;return -1;}
+function numOf(s){const v=parseFloat(String(s).replace(/[",]/g,''));
+  return isNaN(v)?null:v;}
+
+/* Setgraph export: header-mapped, tolerant of column order, kg or lb */
+function importSetgraph(text){
+  const delim=sniffDelim(text.split('\n')[0]||'');
+  const rows=parseCSV(text,delim);
+  if(rows.length<2)return{err:'NO DATA ROWS'};
+  const H=rows[0].map(s=>s.toLowerCase());
+  const iD=colIdx(H,/date|time/),iE=colIdx(H,/exercise|movement|lift|name/),
+        iW=colIdx(H,/weight|load|kg|lb/),iR=colIdx(H,/rep/),
+        iU=colIdx(H,/unit/),iP=colIdx(H,/rpe/);
+  if(iD<0||iE<0||iW<0||iR<0)return{err:'HEADER NOT RECOGNIZED \u2014 NEED DATE / EXERCISE / WEIGHT / REPS'};
+  const kgHeader=/kg/.test(H[iW]);
+  const seen={};
+  for(const s of state.liftSets){const k=s.date+'|'+s.exercise.toLowerCase()+'|'+s.weight+'|'+s.reps;
+    seen[k]=(seen[k]||0)+1;}
+  let add=0,dup=0,skip=0;
+  for(let r=1;r<rows.length;r++){const row=rows[r];
+    const date=parseDateAny(row[iD]),ex=(row[iE]||'').trim();
+    let w=numOf(row[iW]);const reps=numOf(row[iR]);
+    if(!date||!ex||w==null||reps==null||reps<=0){skip++;continue;}
+    const unit=iU>=0?String(row[iU]).toLowerCase():'';
+    if(kgHeader||/kg/.test(unit))w=w*2.20462;
+    w=Math.round(w*10)/10;
+    const k=date+'|'+ex.toLowerCase()+'|'+w+'|'+reps;
+    if(seen[k]>0){seen[k]--;dup++;continue;}
+    const rpe=iP>=0?numOf(row[iP]):null;
+    state.liftSets.push({id:uid(),date,ts:0,exercise:ex,weight:w,reps:Math.round(reps),
+      rpe:rpe||undefined,src:'setgraph'});
+    state.touch[date]=Date.now();
+    add++;}
+  save();
+  return{add,dup,skip};}
+
+/* Garmin Connect activities export: filter running rows, distance unit selectable */
+function importGarmin(text,unit){
+  const rows=parseCSV(text,',');
+  if(rows.length<2)return{err:'NO DATA ROWS'};
+  const H=rows[0].map(s=>s.toLowerCase());
+  const iT=colIdx(H,/activity ?type/),iD=colIdx(H,/^date/),
+        iX=colIdx(H,/^distance/),iS=colIdx(H,/^(time|moving time|elapsed time)/),
+        iN=colIdx(H,/title|name/),iH=colIdx(H,/avg hr|heart/);
+  if(iT<0||iD<0||iX<0||iS<0)return{err:'HEADER NOT RECOGNIZED \u2014 EXPECTED GARMIN ACTIVITIES CSV'};
+  const seen=new Set(state.runs.map(r=>r.date+'|'+r.distMi.toFixed(2)+'|'+Math.round(r.timeSec)));
+  let add=0,dup=0,skip=0;
+  for(let r=1;r<rows.length;r++){const row=rows[r];
+    if(!/run/i.test(row[iT]||''))continue;
+    const date=parseDateAny(row[iD]);
+    let dist=numOf(row[iX]);const t=parseDur(row[iS]);
+    if(!date||dist==null||dist<=0||t==null||t<=0){skip++;continue;}
+    if(unit==='km')dist*=0.621371;
+    dist=Math.round(dist*100)/100;
+    const k=date+'|'+dist.toFixed(2)+'|'+Math.round(t);
+    if(seen.has(k)){dup++;continue;}
+    seen.add(k);
+    const hrv=iH>=0?numOf(row[iH]):null;
+    state.runs.push({id:uid(),date,distMi:dist,timeSec:Math.round(t),
+      hr:hrv?Math.round(hrv):undefined,
+      title:iN>=0?(row[iN]||'').trim():'',src:'garmin'});
+    state.touch[date]=Date.now();
+    add++;}
+  save();
+  return{add,dup,skip};}
+
+/* ============================== CHARTS ============================== */
+const CHARTS={};
+function chart(o){
+  /* o: {id, h?, main:[[x,y]], dots?, extra:[{pts,stroke,dash,dots,r,fillNone}], band:{lo,hi}, goalY?, goalLabel?, yFmt, tapPts?} */
+  const W=720,H=o.h||190,L=52,R=14,T=12,B=24;
+  const all=[];
+  const push=p=>{if(p&&p.length)for(const q of p)all.push(q);};
+  push(o.main);if(o.extra)for(const e of o.extra)push(e.pts);
+  if(o.band){push(o.band.lo);push(o.band.hi);}
+  if(!all.length)return '<div class="empty">NO DATA</div>';
+  let xmin=Infinity,xmax=-Infinity,ymin=Infinity,ymax=-Infinity;
+  for(const[x,y]of all){if(x<xmin)xmin=x;if(x>xmax)xmax=x;if(y<ymin)ymin=y;if(y>ymax)ymax=y;}
+  if(o.goalY!=null){ymin=Math.min(ymin,o.goalY);ymax=Math.max(ymax,o.goalY);}
+  if(xmax===xmin){xmin-=1;xmax+=1;}
+  if(ymax===ymin){ymin-=1;ymax+=1;}
+  const yp=(ymax-ymin)*0.09;ymin-=yp;ymax+=yp;
+  const sx=x=>L+(x-xmin)/(xmax-xmin)*(W-L-R);
+  const sy=y=>T+(1-(y-ymin)/(ymax-ymin))*(H-T-B);
+  const yFmt=o.yFmt||(v=>fmtN(v,0));
+  let g='';
+  for(let i=0;i<=3;i++){const yv=ymin+(ymax-ymin)*i/3,Y=sy(yv);
+    g+='<line x1="'+L+'" y1="'+Y+'" x2="'+(W-R)+'" y2="'+Y+'" stroke="#16271a" stroke-width="1"/>'
+      +'<text x="'+(L-6)+'" y="'+(Y+3.5)+'" text-anchor="end" font-size="10" fill="#6d8f77">'+esc(yFmt(yv))+'</text>';}
+  for(let i=0;i<=3;i++){const xv=xmin+(xmax-xmin)*i/3,X=sx(xv);
+    g+='<text x="'+X+'" y="'+(H-7)+'" text-anchor="middle" font-size="10" fill="#6d8f77">'+esc(mdLabel(fromDay(Math.round(xv))))+'</text>';}
+  let body='';
+  if(o.band&&o.band.lo.length>1){
+    const pts=o.band.hi.map(p=>sx(p[0])+','+sy(p[1]))
+      .concat(o.band.lo.slice().reverse().map(p=>sx(p[0])+','+sy(p[1])));
+    body+='<polygon points="'+pts.join(' ')+'" fill="rgba(65,255,125,0.10)" stroke="none"/>';}
+  if(o.goalY!=null){const Y=sy(o.goalY);
+    body+='<line x1="'+L+'" y1="'+Y+'" x2="'+(W-R)+'" y2="'+Y+'" stroke="#ffb000" stroke-width="1.4" stroke-dasharray="6 5"/>'
+      +'<text x="'+(W-R)+'" y="'+(Y-4)+'" text-anchor="end" font-size="9.5" fill="#ffb000" letter-spacing="2">'+esc(o.goalLabel||'GOAL')+'</text>';}
+  const drawSeries=(pts,stroke,dash,dots,r,noline)=>{
+    if(!pts||!pts.length)return '';
+    let s='';
+    if(pts.length>1&&!noline)
+      s+='<path d="M'+pts.map(p=>sx(p[0]).toFixed(1)+' '+sy(p[1]).toFixed(1)).join('L')
+        +'" fill="none" stroke="'+stroke+'" stroke-width="1.8"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+    if(dots)for(const p of pts)
+      s+='<circle cx="'+sx(p[0]).toFixed(1)+'" cy="'+sy(p[1]).toFixed(1)+'" r="'+(r||2.6)+'" fill="'
+        +(dots==='hollow'?'#060906':stroke)+'" stroke="'+stroke+'" stroke-width="1.4"/>';
+    return s;};
+  if(o.extra)for(const e of o.extra)
+    body+=drawSeries(e.pts,e.stroke||'#2aa455',e.dash,e.dots,e.r,e.noline);
+  body+=drawSeries(o.main,'#41ff7d',null,o.dots==null?true:o.dots);
+  CHARTS[o.id]={xmin,xmax,L,R,W,pts:(o.tapPts||o.main),yFmt};
+  return '<div class="chartbox"><svg viewBox="0 0 '+W+' '+H+'" width="100%" data-chart="'+o.id+'">'
+    +g+body+'</svg><div class="readout" id="'+o.id+'-ro"></div></div>';}
+
+function chartTap(ev){
+  const svg=ev.target.closest('svg[data-chart]');if(!svg)return;
+  const c=CHARTS[svg.dataset.chart];if(!c||!c.pts.length)return;
+  const rect=svg.getBoundingClientRect();
+  const xv=c.xmin+((ev.clientX-rect.left)/rect.width*c.W-c.L)/(c.W-c.L-c.R)*(c.xmax-c.xmin);
+  let best=c.pts[0];
+  for(const p of c.pts)if(Math.abs(p[0]-xv)<Math.abs(best[0]-xv))best=p;
+  const ro=$(svg.dataset.chart+'-ro');
+  if(ro)ro.textContent='> '+mdLabel(fromDay(Math.round(best[0])))+' \u00b7 '+c.yFmt(best[1]);}
+
+/* ============================== TIMER ============================== */
+let timer=null;
+function startTimer(sec){timer={end:Date.now()+sec*1000,total:sec};tick();
+  clearInterval(startTimer._h);startTimer._h=setInterval(tick,500);}
+function tick(){const el=$('timerStrip');
+  if(!timer){el.hidden=true;clearInterval(startTimer._h);return;}
+  const left=Math.ceil((timer.end-Date.now())/1000);
+  if(left<=0){el.hidden=true;timer=null;clearInterval(startTimer._h);beep();
+    if(navigator.vibrate)navigator.vibrate([180,90,180]);toast('REST COMPLETE');return;}
+  el.hidden=false;el.textContent='REST '+secHMS(left);}
+function beep(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+  const ctx=new C();
+  [0,0.22].forEach(t0=>{const o=ctx.createOscillator(),g=ctx.createGain();
+    o.frequency.value=880;o.type='square';
+    g.gain.setValueAtTime(0.12,ctx.currentTime+t0);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t0+0.16);
+    o.connect(g);g.connect(ctx.destination);
+    o.start(ctx.currentTime+t0);o.stop(ctx.currentTime+t0+0.18);});
+  }catch(e){}}
+
+/* ============================== RENDER: PIECES ============================== */
+function kpi(l,v,s,cls){return '<div class="kpi"><div class="l">'+l+'</div><div class="v '+(cls||'')+'">'+v+'</div>'
+  +(s?'<div class="s">'+s+'</div>':'')+'</div>';}
+
+function plateLine(target){const g=state.settings;
+  const p=plates(target,g.barWeight,g.plates);
+  if(!isFinite(target)||target<=0)return '';
+  if(p.side<0)return 'BELOW BAR ('+g.barWeight+')';
+  if(!p.out.length&&p.side<0.01)return 'EMPTY BAR';
+  const txt=p.out.map(([s,c])=>s+'\u00d7'+c).join(' + ');
+  return (p.ok?'':'<span class="red">SHORT '+fmtN(p.rem*2,1)+' \u2014 </span>')+txt+' / SIDE';}
+
+/* ============================== RENDER: TABS ============================== */
+function rDash(){
+  const P=buildProgram();const rv=P.rv;const eng=P.eng;const g=state.settings;
+  const bw=bwSeries();
+  const bwNow=bw.ema.length?bw.ema[bw.ema.length-1][1]:null;
+  const ac=acwrSeries();const[acTxt,acCls]=acwrStatus(ac.cur);
+  let eta='\u2014';
+  if(rv.live){const eq=eq15Series(rv.k);const today=dayNum(todayStr());
+    const tail=eq.filter(p=>p[0]>=today-120);
+    const f=tail.length>=3?ols(tail):(eq.length>=3?ols(eq.slice(-6)):null);
+    if(f&&f.b<0&&rv.t15>g.runGoalSec){const d=(g.runGoalSec-f.a)/f.b;
+      if(d-today<730)eta=mdLabel(fromDay(Math.round(d)));}
+    else if(rv.t15<=g.runGoalSec)eta='AT GOAL';}
+  const wkT=weeklyTonnage();const ks=Object.keys(wkT).map(Number).sort((a,b)=>a-b);
+  const tw=ks.length?wkT[ks[ks.length-1]]:0;
+  const pw=ks.length>1?wkT[ks[ks.length-2]]||0:0;
+  const prs=recentPRs(14);
+  const cw=P.weeks[P.now.week-1];
+  const strip=ENG_DAYS.map((d,i)=>{const key=d.lift?d.lift.toLowerCase():null;
+    const Lp=key?cw.lifts[key]:null;
+    const ab={Bench:'BP',Deadlift:'DL',Squat:'SQ',OHP:'OHP'}[d.lift]||'\u2014';
+    const rs={'Intervals':'INT','Easy run':'EZ','Easy + mobility':'MOB','Tempo run':'TMP','Long run':'LONG','Full rest':'REST'}[d.second];
+    return '<div class="wcell'+(i===P.now.dow?' hot':'')+'"><div class="d">'+d.name.toUpperCase()+'</div>'
+      +'<div class="l">'+ab+(Lp&&Lp.load!=null?' '+Lp.load:'')+'</div>'
+      +'<div class="r">'+rs+'</div></div>';}).join('');
+  const gap=Math.max(0,rv.vGoal-rv.vNow);
+  const maxD=Math.max(0,(eng.bench.goal||0)-eng.bench.working,
+    (eng.squat.goal||0)-eng.squat.working,(eng.deadlift.goal||0)-eng.deadlift.working);
+  const goal=(nm,k)=>{const L=eng[k];const d=(L.goal||0)-L.working;const fz=feas(d);
+    return kpi(nm,L.working+' \u2192 '+(L.goal||'\u2014'),
+      '<span class="'+fz[1]+'">'+(d>0?'+'+d+' \u00b7 '+fz[0]:'AT GOAL')+'</span>');};
+  const kg=(bwNow||180)*0.453592;
+  return '<div class="kpis">'
+    +kpi('BODY TREND',bwNow?fmtN(bwNow,1)+' LB':'\u2014',bw.rate!=null?(bw.rate>0?'+':'')+fmtN(bw.rate,2)+' LB/WK':'')
+    +kpi('ACWR',ac.cur!=null?fmtN(ac.cur,2):'\u2014',acTxt,acCls)
+    +kpi(fmtN(g.runGoalDist,1)+' MI EQ',secHMS(rv.t15),(rv.live?'':'BASELINE \u00b7 ')+'GOAL '+secHMS(g.runGoalSec)+' \u00b7 ETA '+eta)
+    +kpi('WK TONNAGE',tw?Math.round(tw/1000)+'K LB':'\u2014',pw?(tw>=pw?'+':'')+Math.round((tw-pw)/1000)+'K VS LAST':'')
+    +'</div>'
+    +'<div class="panel"><div class="ptitle"><span>PROGRAM \u00b7 WEEK '+P.now.week+' \u00b7 '+cw.f.label+'</span>'
+    +'<button class="btn sm" data-act="plan-open">OPEN PLAN</button></div>'
+    +'<div class="wstrip">'+strip+'</div>'
+    +'<div class="small mut">Lifts sit within '+maxD+' lb of target \u2014 verify and peak. The run is the work: +'+fmtN(gap,1)+' VDOT in '+(36-P.now.week)+' wks. Monday intervals and the Saturday long run are the levers.</div></div>'
+    +'<div class="kpis">'+goal('BENCH','bench')+goal('SQUAT','squat')+goal('DEADLIFT','deadlift')
+    +kpi(fmtN(g.runGoalDist,1)+' MI',secHMS(rv.t15)+' \u2192 '+secHMS(g.runGoalSec),
+      '<span class="amber">+'+fmtN(gap,1)+' VDOT \u00b7 PRIMARY</span>')+'</div>'
+    +'<div class="panel"><div class="ptitle"><span>REP PRS \u00b7 LAST 14 DAYS</span></div>'
+    +(prs.length?'<div class="list">'+prs.map(p=>'<div class="it"><span>'+esc(p.ex)
+      +' <span class="mut">'+p.reps+'RM</span></span><span class="gn">'+p.weight
+      +' <span class="mut">was '+p.prev+'</span></span></div>').join('')+'</div>'
+      :'<div class="empty">No PRs logged in the window. Log sets or import Setgraph history under DATA.</div>')
+    +'</div>'
+    +'<div class="panel"><div class="ptitle"><span>FUEL \u0026 RECOVERY</span></div>'
+    +'<div class="kpis">'
+    +kpi('CALORIES','2.8\u20133.2K','SURPLUS ON LIFT DAYS')
+    +kpi('PROTEIN',Math.round(kg*1.8)+'\u2013'+Math.round(kg*2.0)+' G','1.8\u20132.0 G/KG')
+    +kpi('CARBS','400\u2013500 G','FUEL THE QUALITY RUNS')
+    +kpi('PRE-BED','MG GLYCINATE','300\u2013400 MG')+'</div>'
+    +'<div class="small mut">Creatine 5 g daily \u00b7 fish oil ~1.5\u20132 g EPA/DHA \u00b7 vitamin D. Heavy-pull and interval days carry the highest recovery cost \u2014 defend sleep there first.</div></div>'
+    +(state.liftSets.length||state.runs.length?'' :
+      '<div class="panel"><div class="empty">CONSOLE EMPTY. Start under DATA: import Garmin and Setgraph CSVs, then set goals on RUN and BODY.</div></div>');}
+
+function rToday(){
+  const P=buildProgram();
+  const first=fromDay(P.now.start),last=fromDay(P.now.start+36*7-1);
+  if(dayDate==null)dayDate=todayStr()<first?first:(todayStr()>last?last:todayStr());
+  const di=dayAt(dayDate);
+  const isToday=dayDate===todayStr();
+  const head='<div class="panel"><div class="row" style="align-items:center;margin-bottom:0">'
+    +'<button class="btn sm" style="flex:0 0 auto" data-act="day-nav" data-d="-1">&lt;</button>'
+    +'<div style="text-align:center;min-width:0"><div style="letter-spacing:.08em">'
+    +ENG_DAYS[di?di.dow:0].name.toUpperCase()+' \u00b7 '+mdLabel(dayDate)
+    +(isToday?' <span class="gn">\u00b7 TODAY</span>':'')+'</div>'
+    +'<div class="small mut" style="margin-top:4px">'
+    +(di?'WEEK '+di.wk+' \u00b7 <span style="color:'+P.weeks[di.wk-1].f.color+'">'+P.weeks[di.wk-1].f.label
+      +'</span> \u00b7 CYCLE '+P.weeks[di.wk-1].ph.cycle:'OUTSIDE PLAN')+'</div></div>'
+    +'<button class="btn sm" style="flex:0 0 auto" data-act="day-nav" data-d="1">&gt;</button></div>'
+    +(isToday?'':'<button class="btn sm amb full" style="margin-top:8px" data-act="day-today">JUMP TO TODAY</button>')
+    +'</div>';
+  if(!di)return head+'<div class="panel"><div class="empty">No scheduled session \u2014 the plan runs '
+    +mdLabel(first)+' \u2192 '+mdLabel(last)+'. Use the arrows.</div></div>';
+  const w=P.weeks[di.wk-1],d=ENG_DAYS[di.dow];
+  const sets=state.liftSets.filter(x=>x.date===dayDate);
+  const runs=state.runs.filter(x=>x.date===dayDate);
+  const done=!!(sets.length||runs.length);
+  const rt=runText(d,w),rp=runPaceFor(d,w);
+  let rx='RUN\n'+(d.second==='Full rest'?'Full rest \u2014 the adaptation window'
+    :(d.second+(rt?': '+rt:'')+(rp?' @ '+rp+'/mi':'')));
+  const exs=dayExercises(d,w,P.eng);
+  if(exs.length)rx+='\n\nLIFT\n'+exs.map(e=>e.disp+' '+e.tgt).join('\n');
+  const r0=runs[0]||null;
+  let preDist='';
+  if(!r0){if(d.second==='Long run'&&w.ph.focus!=='RACE')preDist=Math.max(5,Math.round(w.mileage*0.34));
+    else if(d.second==='Easy run')preDist=Math.max(3,Math.round(w.mileage*0.16));}
+  const runBlock='<div class="ptitle" style="margin-top:12px"><span>LOG RUN'
+    +(rp?' \u00b7 TARGET '+rp+'/MI':'')+'</span></div>'
+    +'<div class="row"><div><label class="fl">DIST MI</label><input id="tDist" type="number" inputmode="decimal" step="0.01" value="'+(r0?r0.distMi:preDist)+'"></div>'
+    +'<div><label class="fl">TIME</label><input id="tTime" placeholder="mm:ss" value="'+(r0?secHMS(r0.timeSec):'')+'"></div>'
+    +'<div><label class="fl">AVG HR</label><input id="tHr" type="number" inputmode="numeric" value="'+(r0&&r0.hr?r0.hr:'')+'" placeholder="\u2014"></div></div>'
+    +'<div class="row"><div><label class="fl">RPE 1-10</label><input id="tRpe" type="number" inputmode="decimal" step="0.5" value="'+(r0&&r0.rpe?r0.rpe:'')+'" placeholder="\u2014"></div>'
+    +'<div style="flex:2"><label class="fl">NOTES</label><input id="tNote" value="'+esc(state.notes[dayDate]||'')+'"></div></div>';
+  let liftBlock='';
+  if(exs.length){
+    const rows=exs.map((e,i)=>{
+      const logged=sets.filter(x=>x.exercise.toLowerCase()===e.name.toLowerCase());
+      let pw=e.weight,pr=e.reps,ps=e.sets,pp='';
+      if(logged.length){const top=logged.reduce((a,b)=>b.weight>a.weight?b:a);
+        pw=top.weight;pr=top.reps;ps=logged.length;pp=top.rpe||'';}
+      return '<tr><td style="white-space:normal">'+esc(e.disp)+'</td>'
+        +'<td class="mut" style="font-size:10.5px">'+e.tgt+'</td>'
+        +'<td><input id="ls'+i+'" data-ex="'+esc(e.name)+'" type="number" inputmode="numeric" value="'+ps+'" style="width:44px;padding:6px"></td>'
+        +'<td><input id="lw'+i+'" type="number" inputmode="decimal" step="2.5" data-prow="1" value="'+pw+'" style="width:62px;padding:6px"></td>'
+        +'<td><input id="lr'+i+'" type="number" inputmode="numeric" value="'+pr+'" style="width:48px;padding:6px"></td>'
+        +'<td><input id="lp'+i+'" type="number" inputmode="decimal" step="0.5" value="'+pp+'" style="width:48px;padding:6px"></td></tr>';}).join('');
+    liftBlock='<div class="ptitle" style="margin-top:14px"><span>LOG LIFT</span>'
+      +'<button class="btn sm amb" data-act="timer-start">REST</button></div>'
+      +'<div style="overflow-x:auto"><table class="tbl">'
+      +'<tr><th>EXERCISE</th><th>TARGET</th><th>SETS</th><th>LB</th><th>REPS</th><th>RPE</th></tr>'
+      +rows+'</table></div>'
+      +'<div class="plateline" id="plateOut"></div>';}
+  const names=exerciseNames();
+  const other='<datalist id="exlist">'+names.map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>'
+    +'<div class="ptitle" style="margin-top:12px"><span>OTHER / UNPLANNED</span></div>'
+    +'<div class="row"><div style="flex:1.6"><label class="fl">EXERCISE</label><input id="oEx" list="exlist" autocapitalize="words"></div>'
+    +'<div><label class="fl">SETS</label><input id="oS" type="number" inputmode="numeric" value="1"></div>'
+    +'<div><label class="fl">LB</label><input id="oW" type="number" inputmode="decimal" step="2.5"></div>'
+    +'<div><label class="fl">REPS</label><input id="oR" type="number" inputmode="numeric"></div></div>';
+  const loggedList=done?'<div class="ptitle" style="margin-top:12px"><span>ON FILE \u00b7 '+mdLabel(dayDate)+'</span>'
+    +'<button class="btn sm rd" data-act="day-clear">CLEAR DAY</button></div><div class="list">'
+    +sets.map(x=>'<div class="it"><span>'+esc(x.exercise)+'</span><span>'+x.weight+'\u00d7'+x.reps
+      +(x.rpe?' <span class="mut">@'+x.rpe+'</span>':'')
+      +' <button class="btn sm rd" data-act="set-del" data-id="'+x.id+'">X</button></span></div>').join('')
+    +runs.map(x=>'<div class="it"><span>RUN</span><span>'+fmtN(x.distMi,2)+' MI \u00b7 '+secHMS(x.timeSec)
+      +(x.hr?' <span class="mut">'+x.hr+'</span>':'')
+      +' <button class="btn sm rd" data-act="run-del" data-id="'+x.id+'">X</button></span></div>').join('')
+    +'</div>':'';
+  return head+'<div class="panel">'
+    +'<div style="letter-spacing:.06em">'+dayTitle(d,w)+'</div>'
+    +'<div class="small mut" style="margin-top:3px">'
+    +({run:'RUN FIRST, THEN LIFT',lift:'LIFT FIRST, THEN RUN',rest:'REST DAY'})[d.order]
+    +' \u00b7 '+(engineCfg().time||'06:00')+' HST</div>'
+    +(done?'<div class="done">LOGGED \u2014 fields are this day\u2019s data; SAVE rewrites it</div>':'')
+    +'<div class="rx">'+esc(rx)+'</div>'
+    +runBlock+liftBlock+other
+    +'<button class="btn full" data-act="save-day" style="margin-top:12px">'+(done?'UPDATE DAY':'SAVE DAY')+'</button>'
+    +loggedList
+    +'<div class="dnote">'+d.note+'</div></div>';}
+
+function rLiftDetail(ex){
+  const{inc,flagged}=e1rmSeries(ex);
+  const today=dayNum(todayStr());
+  let extra=[],band=null,eta='';
+  const f=inc.length>=3?ols(inc.filter(p=>p[0]>=today-180).length>=3?inc.filter(p=>p[0]>=today-180):inc):null;
+  if(f){const x1=Math.max(today+90,inc[inc.length-1][0]+30);
+    const line=[],lo=[],hi=[];
+    for(let i=0;i<=24;i++){const x=inc[0][0]+(x1-inc[0][0])*i/24;
+      const y=f.pred(x),c=f.ci(x);
+      line.push([x,y]);lo.push([x,y-c]);hi.push([x,y+c]);}
+    extra.push({pts:line,stroke:'#2aa455',dash:'5 5',dots:false});
+    band={lo,hi};
+    const meta=state.exMeta[ex]||{};
+    if(meta.target){
+      if(f.b>0&&f.pred(today)<meta.target){
+        const d=(meta.target-f.a)/f.b;
+        if(d-today<1095)eta='PROJECTED TO HIT '+meta.target+' ~ '+fromDay(Math.round(d));}
+      else if(f.pred(today)>=meta.target)eta='TARGET REACHED';
+      else eta='NO CONVERGENCE ON CURRENT TREND';}}
+  if(flagged.length)extra.push({pts:flagged,stroke:'#6d8f77',dots:'hollow',noline:true});
+  const meta=state.exMeta[ex]||{};
+  const prs=repPRs(ex);
+  const prRows=[];
+  for(let r=1;r<=10;r++)if(prs[r])
+    prRows.push('<tr><td>'+r+'RM</td><td>'+prs[r].weight+'</td><td class="mut">'
+      +Math.round(epley(prs[r].weight,r))+'</td><td class="mut">'+mdLabel(prs[r].date)+'</td></tr>');
+  const recent=state.liftSets.filter(s=>s.exercise===ex)
+    .sort((a,b)=>a.date<b.date?1:-1).slice(0,12);
+  return '<button class="bk" data-act="ex-back">&lt; BACK TO ANALYZE</button>'
+    +'<div class="panel"><div class="ptitle"><span>'+esc(ex).toUpperCase()+' \u00b7 e1RM</span>'
+    +(stalled(ex)?'<span class="tag red">STALL \u2014 CONSIDER DELOAD</span>':'')+'</div>'
+    +chart({id:'exch',main:inc,extra,band,goalY:meta.target||null,goalLabel:'TARGET',
+      yFmt:v=>Math.round(v)+''})
+    +(eta?'<div class="small amber">'+eta+'</div>':'')
+    +(flagged.length?'<div class="small mut">Hollow points: sets over 10 reps \u2014 shown, excluded from the fit (Epley inflates past ~10).</div>':'')
+    +'<hr><div class="row"><div><label class="fl">TARGET e1RM</label>'
+    +'<input id="exTarget" type="number" inputmode="numeric" value="'+(meta.target||'')+'"></div>'
+    +'<div><label class="fl">REST SEC</label><input id="exRest" type="number" inputmode="numeric" value="'+(meta.rest||'')+'" placeholder="'+state.settings.defaultRest+'"></div>'
+    +'<button class="btn" style="flex:0 0 auto;align-self:end" data-act="ex-meta" data-ex="'+esc(ex)+'">SAVE</button></div></div>'
+    +'<div class="panel"><div class="ptitle"><span>REP PRS</span></div>'
+    +(prRows.length?'<table class="tbl"><tr><th>REPS</th><th>WEIGHT</th><th>e1RM</th><th>DATE</th></tr>'+prRows.join('')+'</table>'
+      :'<div class="empty">No PRs yet.</div>')+'</div>'
+    +'<div class="panel"><div class="ptitle"><span>RECENT SETS</span></div><div class="list">'
+    +recent.map(s=>'<div class="it"><span class="mut">'+mdLabel(s.date)+'</span><span>'+s.weight+'\u00d7'+s.reps
+      +(s.rpe?' <span class="mut">@'+s.rpe+'</span>':'')+'</span></div>').join('')+'</div></div>';}
+
+function rAnalyze(){
+  const seg=(k,l)=>'<button class="'+(anaSeg===k?'on':'')+'" data-act="ana-seg" data-seg="'+k+'">'+l+'</button>';
+  return '<div class="seg">'+seg('over','OVERVIEW')+seg('lift','LIFTS')+seg('run','RUNNING')+'</div>'
+    +(anaSeg==='over'?rAnaOver():anaSeg==='lift'?rAnaLift():rAnaRun());}
+
+function rAnaOver(){
+  const P=buildProgram();const today=dayNum(todayStr());
+  const have=new Set();
+  for(const x of state.liftSets)have.add(x.date);
+  for(const x of state.runs)have.add(x.date);
+  let sched=0,done=0;
+  for(const w of P.weeks)for(let i=0;i<7;i++){
+    if(ENG_DAYS[i].order==='rest')continue;
+    const dn=P.now.start+(w.wk-1)*7+i;
+    if(dn>today)continue;
+    sched++;if(have.has(fromDay(dn)))done++;}
+  const adh=sched?Math.round(done/sched*100):0;
+  const allBest=ex=>{if(!ex)return null;const r=e1rmSeries(ex).inc;
+    return r.length?Math.max.apply(null,r.map(p=>p[1])):null;};
+  const kp=(nm,k)=>{const L=P.eng[k];const b=allBest(L.map);
+    return kpi('EST '+nm,b?Math.round(b):'\u2014','GOAL '+(L.goal||'\u2014'));};
+  const xs=P.weeks.map(w=>P.now.start+(w.wk-1)*7);
+  const series=k=>P.eng[k].map?e1rmSeries(P.eng[k].map).inc:[];
+  const gl=k=>P.eng[k].goal?[[xs[0],P.eng[k].goal],[xs[35],P.eng[k].goal]]:[];
+  const e1=chart({id:'a1rm',h:190,main:series('bench'),yFmt:v=>Math.round(v)+'',
+    extra:[{pts:series('squat'),stroke:'#ffb000',dots:true,noline:true},
+      {pts:series('deadlift'),stroke:'#54d1ff',dots:true,noline:true},
+      {pts:gl('bench'),stroke:'#41ff7d',dash:'4 5',dots:false},
+      {pts:gl('squat'),stroke:'#ffb000',dash:'4 5',dots:false},
+      {pts:gl('deadlift'),stroke:'#54d1ff',dash:'4 5',dots:false}],
+    tapPts:series('bench').length?series('bench'):series('deadlift')});
+  const tts=state.runs.filter(r=>r.src==='retest'||/trial|\btt\b/i.test(r.title||''))
+    .map(r=>[dayNum(r.date),vdotFromRace(r.distMi*MILE_M,r.timeSec/60)])
+    .sort((a,b)=>a[0]-b[0]);
+  const planned=P.weeks.map((w,i)=>[xs[i],w.vdot]);
+  const vch=chart({id:'avd',h:150,main:tts,
+    extra:[{pts:planned,stroke:'#2aa455',dash:'5 5',dots:false}],
+    goalY:P.rv.vGoal,goalLabel:'GOAL '+fmtN(P.rv.vGoal,1),yFmt:v=>fmtN(v,1),
+    tapPts:tts.length?tts:planned});
+  const act={};for(const r of state.runs){const di=dayAt(r.date);
+    if(di)act[di.wk]=(act[di.wk]||0)+r.distMi;}
+  const mAct=P.weeks.map((w,i)=>[xs[i],Math.round((act[w.wk]||0)*10)/10]);
+  const mPlan=P.weeks.map((w,i)=>[xs[i],w.mileage]);
+  const mch=chart({id:'ami',h:150,main:mAct,
+    extra:[{pts:mPlan,stroke:'#6d8f77',dash:'4 4',dots:false}],
+    yFmt:v=>Math.round(v)+'',tapPts:mAct});
+  const ton={};for(const x of state.liftSets){const di=dayAt(x.date);
+    if(di)ton[di.wk]=(ton[di.wk]||0)+x.weight*x.reps;}
+  const tArr=P.weeks.map((w,i)=>[xs[i],Math.round((ton[w.wk]||0)/100)/10]);
+  const tch=chart({id:'aton',h:150,main:tArr,yFmt:v=>fmtN(v,1)+'K'});
+  const rp=state.runs.filter(r=>r.rpe).map(r=>r.rpe);
+  const avgR=rp.length?fmtN(rp.reduce((a,b)=>a+b,0)/rp.length,1):'\u2014';
+  const lastV=tts.length?fmtN(tts[tts.length-1][1],1):fmtN(P.rv.vNow,1);
+  const empty=(state.liftSets.length||state.runs.length)?'' :
+    '<div class="panel"><div class="empty">No sessions logged yet \u2014 log from TODAY or import Setgraph / Garmin under DATA, and trends appear here.</div></div>';
+  return '<div class="kpis">'
+    +kpi('ADHERENCE',adh+'%',done+' / '+sched+' SESSIONS')
+    +kp('BENCH 1RM','bench')+kp('SQUAT 1RM','squat')+kp('DEADLIFT 1RM','deadlift')
+    +'</div>'
+    +'<div class="panel"><div class="ptitle"><span>ESTIMATED 1RM VS TARGET</span></div>'+e1
+    +'<div class="legend"><span><i style="background:#41ff7d"></i>BENCH</span>'
+    +'<span><i style="background:#ffb000"></i>SQUAT</span>'
+    +'<span><i style="background:#54d1ff"></i>DEADLIFT</span>'
+    +'<span class="mut">dashed = goal</span></div></div>'
+    +'<div class="panel"><div class="ptitle"><span>VDOT PROGRESSION \u00b7 TIME-TRIALS VS PLAN</span></div>'+vch
+    +'<div class="small mut">Dots are logged time-trials (retests). The dashed line is the engine\u2019s planned path from live fitness to goal.</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>WEEKLY MILEAGE \u00b7 PLANNED VS ACTUAL</span></div>'+mch
+    +'<div class="legend"><span><i style="background:#41ff7d"></i>ACTUAL</span>'
+    +'<span><i style="background:#6d8f77"></i>PLANNED</span></div></div>'
+    +'<div class="panel"><div class="ptitle"><span>WEEKLY LIFTING TONNAGE</span></div>'+tch
+    +'<div class="small mut">Thousands of pounds per program week.</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>ADHERENCE \u0026 LOAD</span></div>'
+    +'<div class="kpis">'
+    +kpi('SESSIONS DONE',done+'/'+sched,'')
+    +kpi('AVG RUN RPE',avgR,'')
+    +kpi('LATEST VDOT',lastV,tts.length?'FROM TIME-TRIAL':'LIVE ESTIMATE')
+    +kpi('PROGRAM WEEK',P.now.week+'/36',P.weeks[P.now.week-1].f.label)
+    +'</div></div>'+empty;}
+
+function rAnaLift(){
+  const names=exerciseNames();
+  const exList=names.map(nm=>{const e=currentE1RM(nm);
+    return '<div class="it" data-act="ex-open" data-ex="'+esc(nm)+'"><span>'+esc(nm)
+      +(stalled(nm)?' <span class="tag red">STALL</span>':'')+'</span>'
+      +'<span class="gn">'+(e?'e1RM '+Math.round(e):'\u2014')+' <span class="mut">&gt;</span></span></div>';}).join('');
+  return '<div class="panel"><div class="ptitle"><span>EXERCISES \u00b7 TAP FOR DETAIL</span></div>'
+    +(names.length?'<div class="list">'+exList+'</div>'
+      :'<div class="empty">Log sets on TODAY or import Setgraph history under DATA.</div>')+'</div>';}
+
+function rAnaRun(){
+  const g=state.settings;
+  const rg=riegelK(state.runs);
+  const eq=eq15Series(rg.k);
+  const today=dayNum(todayStr());
+  const win=eq.filter(p=>p[0]>=today-270);
+  const fitPts=eq.filter(p=>p[0]>=today-120);
+  const f=(fitPts.length>=3?ols(fitPts):eq.length>=3?ols(eq.slice(-6)):null);
+  let extra=[],band=null,eta='\u2014',t15=null;
+  if(f){t15=f.pred(today);
+    const x1=today+90,x0=(win.length?win[0][0]:today-30);
+    const line=[],lo=[],hi=[];
+    for(let i=0;i<=24;i++){const x=x0+(x1-x0)*i/24;
+      const y=f.pred(x),c=f.ci(x);line.push([x,y]);lo.push([x,y-c]);hi.push([x,y+c]);}
+    extra.push({pts:line,stroke:'#2aa455',dash:'5 5',dots:false});band={lo,hi};
+    if(f.b<0&&t15>g.runGoalSec){const d=(g.runGoalSec-f.a)/f.b;
+      if(d-today<730)eta=fromDay(Math.round(d));}
+    else if(t15<=g.runGoalSec)eta='AT GOAL';
+    else eta='NOT CONVERGING';}
+  else if(eq.length)t15=eq[eq.length-1][1];
+  const ac=acwrSeries();const[acTxt,acCls]=acwrStatus(ac.cur);
+  const paceRows=t15?[1,1.5,2,3.1,6.2].map(d=>{
+    const t=predictRace(d,rg.k,t15);
+    return '<tr><td>'+d+' MI</td><td>'+secHMS(t)+'</td><td class="mut">'+secPace(t/d)+'</td></tr>';}).join(''):'';
+  const recent=state.runs.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,12);
+  return '<div class="kpis">'
+    +kpi('RIEGEL k',fmtN(rg.k,3),rg.fit?'FIT \u00b7 '+rg.points+' DISTANCES':'DEFAULT 1.06')
+    +kpi(fmtN(g.runGoalDist,1)+' MI NOW',t15?secHMS(t15):'\u2014','GOAL '+secHMS(g.runGoalSec))
+    +kpi('GOAL ETA',eta,'')
+    +kpi('ACWR',ac.cur!=null?fmtN(ac.cur,2):'\u2014',acTxt+' \u00b7 '+fmtN(ac.acute,1)+'/'+fmtN(ac.chronic,1)+' MI',acCls)
+    +'</div>'
+    +'<div class="panel"><div class="ptitle"><span>EQUIVALENT '+fmtN(g.runGoalDist,1)+' MI \u00b7 EVERY RUN VIA RIEGEL</span></div>'
+    +chart({id:'eqch',main:win,band,extra,goalY:g.runGoalSec,goalLabel:'GOAL '+secHMS(g.runGoalSec),yFmt:secHMS})
+    +'<div class="small mut">Targets are edited under DATA \u2192 GOAL PACES.</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>ACWR \u00b7 7D / 28D LOAD</span></div>'
+    +chart({id:'acch',main:ac.series,dots:false,h:150,yFmt:v=>fmtN(v,2),
+      extra:[{pts:ac.series.length?[[ac.series[0][0],0.8],[ac.series[ac.series.length-1][0],0.8]]:[],stroke:'#8a6200',dash:'3 4',dots:false},
+             {pts:ac.series.length?[[ac.series[0][0],1.3],[ac.series[ac.series.length-1][0],1.3]]:[],stroke:'#8a6200',dash:'3 4',dots:false}],
+      tapPts:ac.series})
+    +'<div class="small mut">Hold 0.80\u20131.30. Above 1.50 is spike territory \u2014 protect the plantar fascia.</div></div>'
+    +(paceRows?'<div class="panel"><div class="ptitle"><span>PACE TARGETS \u00b7 CURRENT FITNESS \u00b7 k='+fmtN(rg.k,3)+'</span></div>'
+      +'<table class="tbl"><tr><th>DIST</th><th>TIME</th><th>PACE</th></tr>'+paceRows+'</table></div>':'')
+    +'<div class="panel"><div class="ptitle"><span>RUN LOG</span></div>'
+    +(recent.length?'<div class="list">'+recent.map(r=>'<div class="it"><span class="mut">'+mdLabel(r.date)
+      +'</span><span>'+fmtN(r.distMi,2)+' MI \u00b7 '+secHMS(r.timeSec)
+      +' <span class="mut">'+secPace(r.timeSec/r.distMi)+(r.hr?' \u00b7 '+r.hr:'')+'</span>'
+      +' <button class="btn sm rd" data-act="run-del" data-id="'+r.id+'">X</button></span></div>').join('')+'</div>'
+      :'<div class="empty">No runs. Log them on TODAY or import Garmin CSV under DATA.</div>')+'</div>';}
+
+function rBody(){
+  const g=state.settings;
+  const bw=bwSeries();
+  const today=dayNum(todayStr());
+  const win=p=>p.filter(q=>q[0]>=today-270);
+  let extra=[{pts:win(bw.ema),stroke:'#41ff7d',dots:false}];
+  let eta='\u2014';
+  if(bw.ema.length>=4&&bw.rate!=null&&g.bwGoal){
+    const last=bw.ema[bw.ema.length-1];
+    const dir=g.bwGoal-last[1];
+    if(Math.abs(bw.rate)>0.05&&dir*bw.rate>0){
+      const days=dir/(bw.rate/7);
+      if(days<730){eta=fromDay(Math.round(last[0]+days));
+        extra.push({pts:[[last[0],last[1]],[last[0]+days,g.bwGoal]],stroke:'#2aa455',dash:'5 5',dots:false});}}
+    else if(Math.abs(dir)<1)eta='AT GOAL';}
+  const recent=state.weights.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,10);
+  return '<div class="kpis">'
+    +kpi('TREND',bw.ema.length?fmtN(bw.ema[bw.ema.length-1][1],1)+' LB':'\u2014','7-DAY EMA')
+    +kpi('RATE',bw.rate!=null?(bw.rate>0?'+':'')+fmtN(bw.rate,2):'\u2014','LB / WK')
+    +kpi('GOAL',g.bwGoal?g.bwGoal+' LB':'\u2014','ETA '+eta)
+    +kpi('ENTRIES',state.weights.length,'')
+    +'</div>'
+    +'<div class="panel"><div class="ptitle"><span>BODY WEIGHT</span></div>'
+    +chart({id:'bwch',main:win(bw.pts),dots:true,extra,goalY:g.bwGoal||null,
+      yFmt:v=>fmtN(v,0),tapPts:win(bw.ema).length?win(bw.ema):win(bw.pts)})
+    +'<div class="small mut">Dots: raw weigh-ins. Line: 7-day EMA \u2014 projections run on the trend, not the noise.</div>'
+    +'<hr><div class="row"><div><label class="fl">TODAY LB</label>'
+    +'<input id="bwIn" type="number" inputmode="decimal" step="0.1"></div>'
+    +'<div><label class="fl">GOAL LB</label><input id="bGoal" type="number" inputmode="decimal" value="'+(g.bwGoal||'')+'"></div>'
+    +'<button class="btn" style="flex:0 0 auto;align-self:end" data-act="bw-log">LOG</button></div></div>'
+    +'<div class="panel"><div class="ptitle"><span>RECENT</span></div>'
+    +(recent.length?'<div class="list">'+recent.map(w=>'<div class="it"><span class="mut">'+mdLabel(w.date)
+      +'</span><span>'+fmtN(w.lb,1)+' <button class="btn sm rd" data-act="bw-del" data-date="'+w.date+'">X</button></span></div>').join('')+'</div>'
+      :'<div class="empty">Log a weigh-in above. Trend math wakes up after a few entries.</div>')+'</div>';}
+
+function rData(){
+  const g=state.settings;
+  const inv=Object.entries(g.plates).map(([s,c])=>s+'x'+c).join(', ');
+  const E=engineCfg();const names=exerciseNames();
+  const sel=(id,cur)=>'<select id="'+id+'"><option value="">\u2014</option>'
+    +names.map(n=>'<option'+(n===cur?' selected':'')+'>'+esc(n)+'</option>').join('')+'</select>';
+  const liftRow=(nm,k)=>'<div class="row">'
+    +'<div style="flex:0 0 70px;align-self:center" class="small mut">'+nm+'</div>'
+    +'<div><label class="fl">TESTED</label><input id="eT_'+k+'" type="number" inputmode="numeric" value="'+(E.lifts[k].test||'')+'"></div>'
+    +'<div><label class="fl">GOAL</label><input id="eG_'+k+'" type="number" inputmode="numeric" value="'+(E.lifts[k].goal||'')+'"></div>'
+    +'<div style="flex:1.5;min-width:0"><label class="fl">MAP</label>'+sel('eM_'+k,E.lifts[k].map)+'</div></div>';
+  const gv=vdotFromRace(g.runGoalDist*MILE_M,g.runGoalSec/60);
+  return '<div class="panel"><div class="ptitle"><span>IMPORT \u00b7 GARMIN CONNECT ACTIVITIES CSV</span></div>'
+    +'<div class="row"><select id="gmUnit" style="flex:0 0 110px"><option value="mi">MILES</option><option value="km">KM</option></select>'
+    +'<input type="file" id="gmFile" accept=".csv,text/csv"></div>'
+    +'<button class="btn full" data-act="imp-garmin">IMPORT RUNS</button>'
+    +'<div class="small mut" style="margin-top:6px">Activities export from connect.garmin.com. Non-running rows are skipped. Match the unit to your Garmin display setting.</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>IMPORT \u00b7 SETGRAPH CSV</span></div>'
+    +'<div class="row"><input type="file" id="sgFile" accept=".csv,text/csv"></div>'
+    +'<button class="btn full" data-act="imp-setgraph">IMPORT SETS</button>'
+    +'<div class="small mut" style="margin-top:6px">Columns mapped by header name (date / exercise / weight / reps; kg auto-converts). Exact duplicates skipped.</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>PROGRAM ENGINE</span></div>'
+    +'<div class="row"><div><label class="fl">START DATE</label><input id="eStart" type="date" value="'+esc(E.start)+'"></div>'
+    +'<div><label class="fl">1.5-MI BASELINE</label><input id="eMile" value="'+esc(E.mile15)+'" placeholder="10:00"></div>'
+    +'<div><label class="fl">OHP RATIO</label><input id="eRatio" type="number" inputmode="decimal" step="0.01" value="'+E.ohpRatio+'"></div></div>'
+    +liftRow('BENCH','bench')+liftRow('SQUAT','squat')+liftRow('DEADLIFT','deadlift')
+    +'<div class="row"><div style="flex:0 0 70px;align-self:center" class="small mut">OHP</div>'
+    +'<div style="flex:1;min-width:0"><label class="fl">MAP</label>'+sel('eM_ohp',E.lifts.ohp.map)+'</div></div>'
+    +'<div class="row" style="align-items:center"><label class="small" style="display:flex;gap:8px;align-items:center;color:var(--mu)">'
+    +'<input type="checkbox" id="eUse"'+(E.useEst?' checked':'')+' style="width:auto"> ANCHOR ON HIGHER OF TESTED \u0026 LIVE e1RM</label></div>'
+    +'<button class="btn full" data-act="eng-save">SAVE ENGINE</button>'
+    +'<div class="small mut" style="margin-top:6px">Baseline time is used only until runs exist \u2014 once logged, VDOT goes live from the run log. Mapping pulls live e1RM into the prescribed loads. Start date should be a Monday.</div></div>'
+
+    +'<div class="panel"><div class="ptitle"><span>GOAL PACES \u00b7 RACE TARGETS</span></div>'
+    +'<div class="row"><div><label class="fl">GOAL DIST MI</label><input id="gDist" type="number" inputmode="decimal" step="0.1" value="'+g.runGoalDist+'"></div>'
+    +'<div><label class="fl">GOAL TIME</label><input id="gTime" value="'+secHMS(g.runGoalSec)+'"></div>'
+    +'<div><label class="fl">5K TARGET</label><input id="g5k" value="'+esc(g.goal5k||'')+'"></div></div>'
+    +'<button class="btn full" data-act="rungoal-save">SET TARGETS</button>'
+    +'<div class="small mut" style="margin-top:6px">Goal VDOT '+fmtN(gv,1)+' \u00b7 implied 5K '+secHMS(raceSecAtVdot(5000,gv))+'. Drives the engine\u2019s VDOT path, all paces and race-week targets.</div></div>'
+
+    +'<div class="panel"><div class="ptitle"><span>APPLY A RETEST</span></div>'
+    +'<div class="small mut" style="margin-bottom:8px">Enter what you actually hit. It becomes the new tested anchor, logs the result, and every forward week re-computes from there.</div>'
+    +'<div class="row"><div><label class="fl">BENCH 1RM</label><input id="rt_bench" type="number" inputmode="numeric"></div>'
+    +'<div><label class="fl">SQUAT 1RM</label><input id="rt_squat" type="number" inputmode="numeric"></div>'
+    +'<div><label class="fl">DEADLIFT 1RM</label><input id="rt_deadlift" type="number" inputmode="numeric"></div></div>'
+    +'<div class="row"><div><label class="fl">NEW VDOT</label><input id="rtVdot" type="number" inputmode="decimal" step="0.1"></div>'
+    +'<div><label class="fl">OR 1.5-MI TT</label><input id="rtTT" placeholder="mm:ss"></div></div>'
+    +'<button class="btn full" data-act="retest-apply">APPLY RETEST + RE-ANCHOR FORWARD</button></div>'
+
+    +'<div class="panel"><div class="ptitle"><span>SEAMLESS SYNC \u00b7 YOUR GOOGLE SHEET</span></div>'
+    +'<div class="row"><input id="syUrl" placeholder="https://script.google.com/macros/s/\u2026/exec" value="'+esc(g.syncUrl||'')+'"></div>'
+    +'<div class="row"><button class="btn" data-act="sync-save">SAVE URL</button>'
+    +'<button class="btn" data-act="sync-pull">PULL NOW</button>'
+    +'<button class="btn" data-act="sync-push">PUSH NOW</button></div>'
+    +'<div class="small amber" id="syStat" style="margin-top:4px"></div>'
+    +'<div class="small mut" style="margin-top:6px">Phone\u2194desktop sync through a sheet you own. Auto-pull on open, auto-push on save \u2014 same wire format as training-sync.gs, so an existing deployment works as-is. Fresh setup: sheets.new \u2192 Extensions \u2192 Apps Script \u2192 paste the script \u2192 Deploy as Web app (execute as Me, access Anyone) \u2192 paste the /exec URL above on every device.</div>'
+    +'<button class="btn sm amb" style="margin-top:8px" data-act="gas-copy">COPY APPS SCRIPT</button></div>'
+
+    +'<div class="panel"><div class="ptitle"><span>SAVE / EXPORT</span></div>'
+    +'<div class="row"><button class="btn" data-act="exp-prog">PROGRAM CSV</button>'
+    +'<button class="btn" data-act="exp-ics">CALENDAR .ICS</button></div>'
+    +'<div class="row"><button class="btn" data-act="exp-json">BACKUP JSON</button>'
+    +'<button class="btn" data-act="exp-csv">LOG CSV</button></div>'
+    +'<div class="row"><input type="file" id="bkFile" accept=".json,application/json">'
+    +'<button class="btn amb" style="flex:0 0 auto" data-act="imp-json">RESTORE</button></div>'
+    +'<div class="small mut">iOS can evict local storage. Export JSON after heavy sessions; restore replaces everything.</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>SETTINGS</span></div>'
+    +'<div class="row"><div><label class="fl">BAR LB</label><input id="sBar" type="number" value="'+g.barWeight+'"></div>'
+    +'<div><label class="fl">ROUND LB</label><input id="sRound" type="number" value="'+g.roundLb+'"></div>'
+    +'<div><label class="fl">REST SEC</label><input id="sRest" type="number" value="'+g.defaultRest+'"></div></div>'
+    +'<div class="row"><div><label class="fl">PLATES / SIDE (size x count)</label>'
+    +'<input id="sPlates" value="'+esc(inv)+'"></div></div>'
+    +'<button class="btn full" data-act="set-save">SAVE SETTINGS</button></div>'
+    +'<div class="panel"><div class="ptitle"><span>COUNTS</span></div>'
+    +'<div class="small mut">'+state.liftSets.length+' sets \u00b7 '+state.runs.length+' runs \u00b7 '
+    +state.weights.length+' weigh-ins \u00b7 '+state.templates.length+' templates</div>'
+    +'<hr><button class="btn rd full" data-act="wipe">CLEAR ALL DATA</button></div>';}
+
+function rPlan(){const P=buildProgram();
+  if(planWeek==null)planWeek=P.now.week;
+  const seg=(k,l)=>'<button class="'+(planSeg===k?'on':'')+'" data-act="plan-seg" data-seg="'+k+'">'+l+'</button>';
+  const body=planSeg==='week'?rPlanWeek(P):planSeg==='str'?rPlanStr(P):rPlanRun(P);
+  return '<div class="seg">'+seg('week','WEEK')+seg('str','STRENGTH')+seg('run','RUNNING')+'</div>'+body;}
+
+function rPlanWeek(P){const w=P.weeks[planWeek-1];
+  const head='<div class="panel"><div class="row" style="align-items:center;margin-bottom:4px">'
+    +'<button class="btn sm" style="flex:0 0 auto" data-act="plan-wk" data-d="-1">&lt;</button>'
+    +'<div style="text-align:center;min-width:0"><div style="letter-spacing:.08em">WEEK '+w.wk
+    +' <span class="tag" style="color:'+w.f.color+';border-color:currentColor">'+w.f.label+'</span></div>'
+    +'<div class="small mut" style="margin-top:4px">CYCLE '+w.ph.cycle+' \u00b7 '+weekDates(w.wk)
+    +' \u00b7 '+w.mileage+' MI \u00b7 VDOT '+fmtN(w.vdot,1)+'</div></div>'
+    +'<button class="btn sm" style="flex:0 0 auto" data-act="plan-wk" data-d="1">&gt;</button></div>'
+    +'<input type="range" min="1" max="36" value="'+planWeek+'" id="wkRange"></div>';
+  const days=ENG_DAYS.map((d,i)=>{
+    const hot=(i===P.now.dow&&planWeek===P.now.week);
+    const key=d.lift?d.lift.toLowerCase():null;
+    const Lp=key?w.lifts[key]:null;
+    const oTag={lift:['LIFT \u2192 RUN','cy'],run:['RUN \u2192 LIFT','gn'],rest:['REST','mut']}[d.order];
+    let lift='';
+    if(d.lift&&Lp){const mapped=(P.eng[key]&&P.eng[key].map)||d.lift;
+      lift='<div style="margin-top:7px">'+esc(d.lift).toUpperCase()
+        +(Lp.load!=null
+          ?' <span class="gn">'+Lp.sets+'\u00d7'+Lp.reps+' @ '+Lp.load+'</span> <span class="mut">('+Math.round(Lp.pct*100)+'%)</span>'
+            +' <button class="btn sm" data-act="open-day" data-date="'+dayDateOf(w.wk,i)+'">OPEN</button>'
+          :' <span class="amber">TIME TRIAL / RETEST</span>')
+        +(key==='ohp'&&!P.eng.ohp.live?' <span class="mut small">\u00b7 est</span>':'')
+        +'<div class="small mut" style="margin-top:3px">+ '+ACCESSORY[d.lift]+'</div></div>';}
+    const rt=runText(d,w),rp=runPaceFor(d,w);
+    const qual=['Intervals','Tempo run','Long run'].includes(d.second);
+    const run='<div style="margin-top:7px"><span class="'+(qual?'amber':'')+'">'+d.second.toUpperCase()+'</span>'
+      +(rt?' <span>'+rt+'</span>':'')+(rp?' <span class="mut">@ '+rp+'/mi</span>':'')+'</div>';
+    return '<div class="panel"'+(hot?' style="border-color:var(--gd)"':'')+'>'
+      +'<div class="ptitle"><span>'+d.name.toUpperCase()+(hot?' \u00b7 <span class="gn">TODAY</span>':'')+'</span>'
+      +'<span class="tag '+oTag[1]+'" style="border-color:currentColor">'+oTag[0]+'</span></div>'
+      +(d.order==='run'?run+lift:lift+run)
+      +'<div class="dnote">'+d.note+'</div></div>';}).join('');
+  return head+days;}
+
+function rPlanStr(P){const e=P.eng;
+  const row=(nm,k)=>{const L=e[k];const d=(L.goal||0)-L.working;const fz=feas(d);
+    return '<tr><td>'+nm+'</td><td>'+(L.test||'\u2014')+'</td><td>'+(L.live||'\u2014')
+      +'</td><td class="gn">'+L.working+'</td><td>'+(L.goal||'\u2014')+'</td>'
+      +'<td><span class="'+fz[1]+'">'+(d>0?'+'+d+' '+fz[0]:'AT GOAL')+'</span></td></tr>';};
+  const unmapped=['bench','squat','deadlift'].filter(k=>!e[k].live);
+  const xs=P.weeks.map(w=>P.now.start+(w.wk-1)*7);
+  const line=k=>P.weeks.map((w,i)=>[xs[i],projVal(e[k].working,e[k].goal,w.wk,P.now.week)]);
+  const gl=k=>e[k].goal?[[xs[0],e[k].goal],[xs[35],e[k].goal]]:[];
+  const ch=chart({id:'p1rm',h:200,main:line('bench'),dots:false,yFmt:v=>Math.round(v)+'',
+    extra:[{pts:line('squat'),stroke:'#ffb000',dots:false},
+      {pts:line('deadlift'),stroke:'#54d1ff',dots:false},
+      {pts:gl('bench'),stroke:'#41ff7d',dash:'4 5',dots:false},
+      {pts:gl('squat'),stroke:'#ffb000',dash:'4 5',dots:false},
+      {pts:gl('deadlift'),stroke:'#54d1ff',dash:'4 5',dots:false}],
+    tapPts:line('deadlift')});
+  return '<div class="panel"><div class="ptitle"><span>ENGINE MAXES</span></div>'
+    +'<table class="tbl"><tr><th>LIFT</th><th>TESTED</th><th>LIVE e1RM</th><th>ENGINE</th><th>GOAL</th><th></th></tr>'
+    +row('BENCH','bench')+row('SQUAT','squat')+row('DEADLIFT','deadlift')+row('OHP','ohp')+'</table>'
+    +'<div class="small mut" style="margin-top:8px">Engine anchors on the '
+    +(engineCfg().useEst?'higher of tested 1RM and live e1RM from your logs':'tested 1RM only')+'. '
+    +(unmapped.length?'No live data for '+unmapped.join(', ')+' \u2014 map exercises under DATA.'
+      :'Live e1RM flows from mapped exercises automatically.')+'</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>BLOCK SCHEME</span></div>'
+    +'<table class="tbl"><tr><th>BLOCK</th><th>REPS</th><th>WK1\u21923</th><th style="text-align:left">INTENT</th></tr>'
+    +'<tr><td class="gn">HYP</td><td>8</td><td>3\u21924 sets, heavier wk3</td><td style="text-align:left">tissue + work capacity</td></tr>'
+    +'<tr><td class="cy">STR</td><td>4</td><td>3\u21924 sets, heavier wk3</td><td style="text-align:left">force production</td></tr>'
+    +'<tr><td class="amber">INT</td><td>2</td><td>forced above STR top</td><td style="text-align:left">express max strength</td></tr></table>'
+    +'<div class="small mut" style="margin-top:8px">Each 12-wk cycle: HYP \u2192 deload \u2192 STR \u2192 deload \u2192 INT \u2192 retest. Volume stays lean \u2014 every extra set competes with the runs for recovery. The INT rule is enforced in code.</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>PROJECTED 1RM</span></div>'+ch
+    +'<div class="legend"><span><i style="background:#41ff7d"></i>BENCH</span>'
+    +'<span><i style="background:#ffb000"></i>SQUAT</span>'
+    +'<span><i style="background:#54d1ff"></i>DEADLIFT</span>'
+    +'<span class="mut">dashed = goal</span></div>'
+    +'<div class="small mut" style="margin-top:6px">Linear engine projection from today\u2019s anchor \u2014 real gains arrive faster early and flatten late. A squat stall is the signal to pull run volume, not grind the squat.</div></div>';}
+
+function rPlanRun(P){const rv=P.rv;
+  const a=zonePaces(rv.vNow),b=zonePaces(rv.vGoal);
+  const xs=P.weeks.map(w=>P.now.start+(w.wk-1)*7);
+  const mi=P.weeks.map((w,i)=>[xs[i],w.mileage]);
+  const vd=P.weeks.map((w,i)=>[xs[i],w.vdot]);
+  const f5n=raceSecAtVdot(5000,rv.vNow),f5g=raceSecAtVdot(5000,rv.vGoal);
+  const zone=(nm,use,k,hl)=>'<tr><td class="'+(hl?'amber':'')+'">'+nm
+    +'</td><td style="text-align:left" class="small mut">'+use+'</td><td>'+a[k]
+    +'</td><td'+(hl?' class="gn"':'')+'>'+b[k]+'</td></tr>';
+  return '<div class="kpis">'
+    +kpi('VDOT NOW',fmtN(rv.vNow,1),rv.live?'LIVE FROM RUN LOG':'MANUAL BASELINE')
+    +kpi('VDOT TARGET',fmtN(rv.vGoal,1),'NEED +'+fmtN(Math.max(0,rv.vGoal-rv.vNow),1))
+    +kpi('5K NOW\u2192GOAL',secHMS(f5n)+'\u2192'+secHMS(f5g),'PROJECTED')
+    +kpi('PEAK MILEAGE',Math.max.apply(null,P.weeks.map(w=>w.mileage))+' MI','WKS 30\u201333')
+    +'</div>'
+    +'<div class="panel"><div class="ptitle"><span>TRAINING PACES \u00b7 DANIELS VDOT</span></div>'
+    +'<table class="tbl"><tr><th>ZONE</th><th style="text-align:left">USE</th><th>NOW ('+fmtN(rv.vNow,0)+')</th><th>GOAL ('+fmtN(rv.vGoal,0)+')</th></tr>'
+    +zone('E','Tue/Wed/Thu/Sat base','E')
+    +zone('M','steady reference','M')
+    +zone('T','Friday tempo','T',1)
+    +zone('I','Monday VO2 reps','I',1)
+    +zone('R','strides / sharpening','R')
+    +'</table><div class="small mut" style="margin-top:8px">Computed from the Daniels\u2013Gilbert oxygen-cost and %VO2max curves \u2014 paces move automatically as your logged fitness moves.</div></div>'
+    +'<div class="panel"><div class="ptitle"><span>MILEAGE RAMP</span></div>'
+    +chart({id:'pmi',h:140,main:mi,dots:false,yFmt:v=>Math.round(v)+''})+'</div>'
+    +'<div class="panel"><div class="ptitle"><span>VDOT PATH</span></div>'
+    +chart({id:'pvd',h:140,main:vd,dots:false,goalY:rv.vGoal,goalLabel:'GOAL '+fmtN(rv.vGoal,1),yFmt:v=>fmtN(v,1)})
+    +'<div class="small mut" style="margin-top:6px">Polarized \u2014 ~80% easy, 20% hard. The hard 20% is Monday I-pace and Friday T-pace; deloads cut volume ~40%; the final weeks taper into the time trials.</div></div>';}
+
+function render(){
+  const v=$('view');
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  if(tab==='analyze'&&liftDetail)v.innerHTML=rLiftDetail(liftDetail);
+  else v.innerHTML={today:rToday,dash:rDash,plan:rPlan,analyze:rAnalyze,body:rBody,data:rData}[tab]();
+  if(tab==='today')updatePlate();
+  window.scrollTo(0,0);}
+
+function updatePlate(ev){const el=$('plateOut');if(!el)return;
+  let w=NaN;
+  if(ev&&ev.target&&ev.target.dataset&&ev.target.dataset.prow)w=parseFloat(ev.target.value);
+  else{const f=document.querySelector('[data-prow]');if(f)w=parseFloat(f.value);}
+  el.innerHTML=isFinite(w)&&w>0?plateLine(w):'';}
+
+/* ============================== ACTIONS ============================== */
+function readFile(input,cb){const f=input&&input.files&&input.files[0];
+  if(!f){toast('PICK A FILE FIRST');return;}
+  const rd=new FileReader();rd.onload=()=>cb(rd.result);rd.readAsText(f);}
+
+function download(name,text,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:type||'application/octet-stream'}));
+  a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);}
+
+function onAct(el){
+  const a=el.dataset.act;
+  switch(a){
+    case 'timer-kill': timer=null;tick();break;
+    case 'timer-start': startTimer(state.settings.defaultRest);break;
+    case 'set-del':{const it=state.liftSets.find(s=>s.id===el.dataset.id);
+      state.liftSets=state.liftSets.filter(s=>s.id!==el.dataset.id);
+      if(it)touch(it.date);save();render();pushLog();break;}
+    case 'ex-open': liftDetail=el.dataset.ex;render();break;
+    case 'ex-back': liftDetail=null;render();break;
+    case 'ex-meta':{const ex=el.dataset.ex;
+      const t=parseFloat($('exTarget').value),rs=parseInt($('exRest').value,10);
+      state.exMeta[ex]={target:isFinite(t)?t:undefined,rest:isFinite(rs)?rs:undefined};
+      save();render();toast('SAVED');break;}
+    case 'run-del':{const it=state.runs.find(r=>r.id===el.dataset.id);
+      state.runs=state.runs.filter(r=>r.id!==el.dataset.id);
+      if(it)touch(it.date);save();render();pushLog();break;}
+    case 'rungoal-save':{const d=parseFloat($('gDist').value),t=parseDur($('gTime').value),
+        g5=($('g5k')||{}).value;
+      if(isFinite(d)&&d>0)state.settings.runGoalDist=d;
+      if(t)state.settings.runGoalSec=Math.round(t);
+      if(g5&&parseDur(g5))state.settings.goal5k=g5.trim();
+      save();render();toast('TARGETS SET');break;}
+    case 'bw-log':{const v=parseFloat($('bwIn').value),gl=parseFloat($('bGoal').value);
+      state.settings.bwGoal=isFinite(gl)?gl:null;
+      if(isFinite(v)&&v>0){
+        state.weights=state.weights.filter(w=>w.date!==todayStr());
+        state.weights.push({date:todayStr(),lb:v});}
+      save();render();
+      toast(isFinite(v)?'LOGGED '+fmtN(v,1)+' LB':'GOAL UPDATED');break;}
+    case 'bw-del': state.weights=state.weights.filter(w=>w.date!==el.dataset.date);save();render();break;
+    case 'imp-garmin': readFile($('gmFile'),txt=>{
+        const r=importGarmin(txt,$('gmUnit').value);
+        toast(r.err?r.err:'GARMIN: '+r.add+' RUNS \u00b7 '+r.dup+' DUP \u00b7 '+r.skip+' SKIPPED');
+        render();if(r.add)pushLog();});break;
+    case 'imp-setgraph': readFile($('sgFile'),txt=>{
+        const r=importSetgraph(txt);
+        toast(r.err?r.err:'SETGRAPH: '+r.add+' SETS \u00b7 '+r.dup+' DUP \u00b7 '+r.skip+' SKIPPED');
+        render();if(r.add)pushLog();});break;
+    case 'exp-json': download('forge_backup_'+todayStr()+'.json',
+        JSON.stringify(state,null,1),'application/json');break;
+    case 'exp-csv':{
+      const q=x=>{x=''+(x==null?'':x);return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;};
+      const rows=[['date','exercise','weight_lb','reps','rpe','run_dist_mi','run_time','avg_hr','run_rpe','note']];
+      const dset=new Set();
+      state.liftSets.forEach(x=>dset.add(x.date));
+      state.runs.forEach(x=>dset.add(x.date));
+      Array.from(dset).sort().forEach(d=>{const note=state.notes[d]||'';
+        state.liftSets.filter(x=>x.date===d).forEach(x=>
+          rows.push([d,x.exercise,x.weight,x.reps,x.rpe||'','','','','',note]));
+        state.runs.filter(x=>x.date===d).forEach(x=>
+          rows.push([d,'','','','',x.distMi,secHMS(x.timeSec),x.hr||'',x.rpe||'',note]));});
+      download('forge_log_'+todayStr()+'.csv',
+        rows.map(r=>r.map(q).join(',')).join('\n'),'text/csv');break;}
+    case 'imp-json': readFile($('bkFile'),txt=>{
+        try{const s=JSON.parse(txt);
+          if(!s||s.version!==1||!Array.isArray(s.liftSets))throw 0;
+          if(confirm('Replace ALL current data with this backup?')){
+            state=ensure(s);save();render();toast('RESTORED');}}
+        catch(e){toast('NOT A FORGE BACKUP');}});break;
+    case 'set-save':{const g=state.settings;
+      const b=parseFloat($('sBar').value),r=parseFloat($('sRound').value),
+            t=parseInt($('sRest').value,10);
+      if(isFinite(b)&&b>0)g.barWeight=b;
+      if(isFinite(r)&&r>0)g.roundLb=r;
+      if(isFinite(t)&&t>0)g.defaultRest=t;
+      const inv={};
+      ($('sPlates').value||'').split(',').forEach(p=>{
+        const m=p.trim().match(/^([\d.]+)\s*[x\u00d7]\s*(\d+)$/i);
+        if(m)inv[m[1]]=parseInt(m[2],10);});
+      if(Object.keys(inv).length)g.plates=inv;
+      save();render();toast('SETTINGS SAVED');break;}
+    case 'plan-seg': planSeg=el.dataset.seg;render();break;
+    case 'plan-wk': planWeek=Math.min(36,Math.max(1,(planWeek||1)+ +el.dataset.d));render();break;
+    case 'plan-open': tab='plan';planSeg='week';planWeek=null;render();break;
+    case 'open-day': dayDate=el.dataset.date;tab='today';liftDetail=null;render();break;
+    case 'eng-save':{const E=engineCfg();
+      const sd=$('eStart').value;if(sd)E.start=sd;
+      E.mile15=($('eMile').value||'10:00').trim();
+      const rr=parseFloat($('eRatio').value);if(isFinite(rr)&&rr>0)E.ohpRatio=rr;
+      for(const k of['bench','squat','deadlift']){
+        const t=parseFloat($('eT_'+k).value),gg=parseFloat($('eG_'+k).value);
+        E.lifts[k].test=isFinite(t)?t:null;
+        E.lifts[k].goal=isFinite(gg)?gg:null;
+        E.lifts[k].map=$('eM_'+k).value||null;}
+      E.lifts.ohp.map=$('eM_ohp').value||null;
+      E.useEst=$('eUse').checked;E.mapped=true;
+      save();render();toast('ENGINE SAVED');break;}
+    case 'ana-seg': anaSeg=el.dataset.seg;render();break;
+    case 'day-nav':{const N=engineNow();
+      let d=dayNum(dayDate)+ +el.dataset.d;
+      d=Math.max(N.start,Math.min(N.start+36*7-1,d));
+      dayDate=fromDay(d);render();break;}
+    case 'day-today': dayDate=null;render();break;
+    case 'day-clear': if(confirm('Clear everything logged on '+dayDate+'?')){
+        state.liftSets=state.liftSets.filter(x=>x.date!==dayDate);
+        state.runs=state.runs.filter(x=>x.date!==dayDate);
+        delete state.notes[dayDate];
+        touch(dayDate);save();render();pushLog();toast('CLEARED');}break;
+    case 'save-day':{let nS=0,nR=0;
+      for(let i=0;;i++){const se=$('ls'+i);if(!se)break;
+        const ex=se.dataset.ex,
+              sc=parseInt(se.value,10),
+              wt=parseFloat(($('lw'+i)||{}).value),
+              rp=parseInt(($('lr'+i)||{}).value,10),
+              pe=parseFloat(($('lp'+i)||{}).value);
+        state.liftSets=state.liftSets.filter(x=>
+          !(x.date===dayDate&&x.exercise.toLowerCase()===ex.toLowerCase()));
+        if(isFinite(wt)&&wt>0&&isFinite(rp)&&rp>0){
+          const cnt=Math.max(1,Math.min(12,isFinite(sc)?sc:1));
+          for(let k=0;k<cnt;k++){
+            state.liftSets.push({id:uid(),date:dayDate,ts:Date.now(),exercise:ex,
+              weight:wt,reps:rp,rpe:isFinite(pe)?pe:undefined,src:'forge'});nS++;}}}
+      const oe=($('oEx')?$('oEx').value:'').trim(),
+            os=parseInt(($('oS')||{}).value,10),
+            ow=parseFloat(($('oW')||{}).value),
+            orr=parseInt(($('oR')||{}).value,10);
+      if(oe&&isFinite(ow)&&isFinite(orr)&&orr>0){
+        const cnt=Math.max(1,Math.min(12,isFinite(os)?os:1));
+        for(let k=0;k<cnt;k++){state.liftSets.push({id:uid(),date:dayDate,ts:Date.now(),
+          exercise:oe,weight:ow,reps:orr,src:'forge'});nS++;}}
+      const dist=parseFloat(($('tDist')||{}).value),tm=parseDur(($('tTime')||{}).value),
+            hr=parseInt(($('tHr')||{}).value,10),rpe=parseFloat(($('tRpe')||{}).value);
+      if(isFinite(dist)&&dist>0&&tm){
+        const firstRun=state.runs.find(x=>x.date===dayDate);
+        if(firstRun)state.runs=state.runs.filter(x=>x.id!==firstRun.id);
+        state.runs.push({id:uid(),date:dayDate,distMi:Math.round(dist*100)/100,
+          timeSec:Math.round(tm),hr:isFinite(hr)?hr:undefined,
+          rpe:isFinite(rpe)?rpe:undefined,src:'manual'});nR++;}
+      const nt=($('tNote')||{}).value;
+      let hasNote=false;
+      if(nt!=null){if(nt.trim()){state.notes[dayDate]=nt.trim();hasNote=true;}
+        else delete state.notes[dayDate];}
+      if(!nS&&!nR&&!hasNote){toast('NOTHING TO SAVE \u2014 FILL A SET OR A RUN');return;}
+      touch(dayDate);save();render();pushLog();
+      toast('SAVED \u00b7 '+nS+' SETS \u00b7 '+nR+' RUN');break;}
+    case 'retest-apply':{const E=engineCfg();const dt=todayStr();const did=[];
+      for(const k of['bench','squat','deadlift']){
+        const v=parseFloat($('rt_'+k).value);
+        if(isFinite(v)&&v>0){E.lifts[k].test=v;
+          const ex=E.lifts[k].map||k.charAt(0).toUpperCase()+k.slice(1);
+          state.liftSets.push({id:uid(),date:dt,ts:Date.now(),exercise:ex,
+            weight:v,reps:1,src:'retest'});
+          did.push(k.toUpperCase()+' '+v);}}
+      let v=parseFloat($('rtVdot').value);
+      const tt=parseDur($('rtTT').value);
+      if(!isFinite(v)&&tt)v=vdotFromRace(1.5*MILE_M,tt/60);
+      if(isFinite(v)&&v>20&&v<90){
+        const sec15=tt?Math.round(tt):Math.round(raceSecAtVdot(1.5*MILE_M,v));
+        E.mile15=secHMS(sec15);
+        state.runs.push({id:uid(),date:dt,distMi:1.5,timeSec:sec15,src:'retest'});
+        did.push('VDOT '+fmtN(v,1));}
+      if(!did.length){toast('ENTER AT LEAST ONE RESULT');return;}
+      touch(dt);save();render();pushLog();
+      toast('RETEST APPLIED \u2014 FORWARD WEEKS RE-ANCHORED \u00b7 '+did.join(' \u00b7 '));break;}
+    case 'sync-save':{state.settings.syncUrl=($('syUrl').value||'').trim();save();
+      if(state.settings.syncUrl){syncStat('SYNCING\u2026');
+        pullLog(ok=>{render();syncStat(ok?'SYNCED \u00b7 URL SAVED':'URL SAVED \u2014 COULD NOT REACH SHEET');});}
+      else syncStat('CLEARED');break;}
+    case 'sync-pull':{state.settings.syncUrl=($('syUrl').value||'').trim();save();
+      if(!state.settings.syncUrl){syncStat('SET A URL FIRST');break;}
+      syncStat('PULLING\u2026');
+      pullLog(ok=>{render();syncStat(ok?'PULLED '+new Date().toLocaleTimeString():'PULL FAILED \u2014 CHECK DEPLOYMENT');});break;}
+    case 'sync-push':{state.settings.syncUrl=($('syUrl').value||'').trim();save();
+      if(!state.settings.syncUrl){syncStat('SET A URL FIRST');break;}
+      pushLog();syncStat('PUSHED '+new Date().toLocaleTimeString());break;}
+    case 'gas-copy':{const ok=()=>toast('APPS SCRIPT COPIED');
+      if(navigator.clipboard&&navigator.clipboard.writeText)
+        navigator.clipboard.writeText(GAS_SRC).then(ok,()=>prompt('Copy the script:',GAS_SRC));
+      else prompt('Copy the script:',GAS_SRC);break;}
+    case 'exp-prog':{const P=buildProgram();
+      const q=x=>{x=''+(x==null?'':x);return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;};
+      const rows=[['week','phase','cycle','date','day','title','run','lift']];
+      for(const w of P.weeks)for(let i=0;i<7;i++){const d=ENG_DAYS[i];
+        const rt=runText(d,w),rp=runPaceFor(d,w);
+        const run=d.second+(rt?': '+rt:'')+(rp?' @ '+rp+'/mi':'');
+        const lift=dayExercises(d,w,P.eng).map(e=>e.disp+' '+e.tgt).join(' / ');
+        rows.push([w.wk,w.ph.focus,w.ph.cycle,dayDateOf(w.wk,i),d.name,
+          dayTitle(d,w).replace(/\u2192/g,'->'),run,lift]);}
+      download('forge_program_'+todayStr()+'.csv',
+        rows.map(r=>r.map(q).join(',')).join('\n'),'text/csv');break;}
+    case 'exp-ics':{const P=buildProgram();const tm=engineCfg().time||'06:00';
+      const p2=x=>String(x).padStart(2,'0');
+      const sane=x=>x.replace(/\u2192/g,'->').replace(/([,;])/g,'\\$1');
+      const stamp=(d,t)=>{const a=d.split('-');const p=t.split(':');
+        return a[0]+a[1]+a[2]+'T'+p2(p[0])+p2(p[1])+'00';};
+      const add90=t=>{const p=t.split(':').map(Number);const tot=p[0]*60+p[1]+90;
+        return p2(Math.floor(tot/60)%24)+':'+p2(tot%60);};
+      const liftTag=(d,w)=>{if(!d.lift||w.ph.focus==='RACE')return '';
+        const ex=dayExercises(d,w,P.eng)[0];if(!ex)return '';
+        return (ex.weight!==''&&ex.weight!=null)
+          ?ex.disp+' '+ex.sets+'\u00d7'+ex.reps+' @'+ex.weight
+          :ex.disp+' heavy single';};
+      const runTag=(d,w)=>{const rx=runText(d,w),fx=w.ph.focus,s=d.second;
+        const trial=((s==='Intervals'||s==='Tempo run')&&(fx==='RACE'||fx==='RETEST'))
+          ||(s==='Long run'&&fx==='RACE');
+        if(trial)return rx;
+        const z={'Intervals':'INTERVAL','Tempo run':'TEMPO','Easy run':'Z2',
+          'Long run':'Z2 LONG','Easy + mobility':'Z2'}[s]||'';
+        const det=rx.replace(/\s*@.*$/,'').replace(/\s*\u00b7.*$/,'').trim();
+        return (z+(det?' '+det:'')).trim();};
+      const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//FORGE//EN','CALSCALE:GREGORIAN'];
+      for(const w of P.weeks)for(let i=0;i<7;i++){const d=ENG_DAYS[i];
+        if(d.order==='rest')continue;
+        const date=dayDateOf(w.wk,i);const rt=runText(d,w);
+        const lt=liftTag(d,w),rg=runTag(d,w);
+        const seq=(d.order==='run'?[rg,lt]:[lt,rg]).filter(Boolean).join(' \u2192 ');
+        const desc=sane('RUN: '+d.second+(rt?' '+rt:''))
+          +(d.lift?'\\nLIFT: '+sane(dayExercises(d,w,P.eng).map(e=>e.disp+' '+e.tgt).join('; ')):'');
+        L.push('BEGIN:VEVENT','UID:'+date+'-forge@local',
+          'DTSTART:'+stamp(date,tm),'DTEND:'+stamp(date,add90(tm)),
+          'SUMMARY:'+sane('W'+w.wk+' '+w.ph.focus+': '+seq),
+          'DESCRIPTION:'+desc,'END:VEVENT');}
+      L.push('END:VCALENDAR');
+      download('forge_program.ics',L.join('\r\n'),'text/calendar');break;}
+    case 'wipe': if(confirm('Erase EVERYTHING? Export a backup first.')&&confirm('Last chance \u2014 erase all FORGE data?')){
+        state=JSON.parse(JSON.stringify(DEF));save();render();toast('CONSOLE WIPED');}break;
+  }}
+
+/* ============================== BOOT ============================== */
+function boot(){
+  document.querySelectorAll('#tabs button').forEach(b=>
+    b.addEventListener('click',()=>{tab=b.dataset.tab;liftDetail=null;render();}));
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('[data-act]');
+    if(el){onAct(el);return;}
+    chartTap(e);});
+  document.addEventListener('change',e=>{
+    if(e.target.id==='wkRange'){planWeek=+e.target.value;render();}});
+  document.addEventListener('input',e=>{
+    if(e.target.dataset&&e.target.dataset.prow)updatePlate(e);});
+  render();
+  if(state.settings.syncUrl)pullLog(ok=>{if(ok){render();toast('SYNCED FROM SHEET');}});}
+boot();
+</script>
+</body>
+</html>
